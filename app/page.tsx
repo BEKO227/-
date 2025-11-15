@@ -2,12 +2,12 @@
 import Image from "next/image";
 import SaleBar from './components/SaleBar';
 import Navbar from './components/Navbar';
-import NewArrivals from './components/NewArrvial';
 import TopSellers from './components/TopSeller';
 import AllScarfsSection from './components/AllScarf';
 import { FaWhatsapp } from "react-icons/fa"; // Using react-icons
 import Footer from './components/Footer';
 import StylingSection from './components/Styling';
+import NewArrival from './components/NewArrvial';
 
 export default function Home() {
   const whatsappNumber = "+201027157089"; // replace with your WhatsApp number including country code
@@ -18,7 +18,7 @@ export default function Home() {
     <div className="bg-white font-sans text-brown-800 relative">
       <SaleBar />
       <Navbar />
-      <NewArrivals/>
+      <NewArrival/>
       <TopSellers/>
       <AllScarfsSection/>
       <StylingSection/>

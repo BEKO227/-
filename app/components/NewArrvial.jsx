@@ -19,7 +19,7 @@ const scarves = [
   { name: "Elegant Wrap", image: "/scarf5.webp" },
 ];
 
-export default function NewArrivals() {
+export default function NewArrival() {
   const autoplay = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
