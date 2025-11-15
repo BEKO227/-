@@ -6,7 +6,15 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function ProductCard({ product, small = false }) {
-  const { title, price, ratingsAverage, ratingsQuantity, imageCover, tag, isNewArrival, slug } = product;
+  const {
+    title,
+    price,
+    ratingsAverage,
+    ratingsQuantity,
+    imageCover,
+    tag,
+    isNewArrival,
+  } = product;
 
   const fullStars = Math.floor(ratingsAverage);
   const hasHalfStar = ratingsAverage % 1 >= 0.5;
@@ -17,29 +25,48 @@ export default function ProductCard({ product, small = false }) {
       <Card
         className={`w-full max-w-[${small ? "250px" : "320px"}] shadow-md rounded-2xl overflow-hidden mx-auto cursor-pointer hover:shadow-xl transition`}
       >
-        {/* Product Image */}
         <CardHeader className="p-0 relative">
-          {/* Existing Tag */}
-          {tag && (
-            <div
-              className={`absolute top-2 left-2 text-white font-bold text-xs px-2 py-1 rounded z-10 ${
-                tag === "Top Seller"
-                  ? "bg-yellow-400"
-                  : tag === "On Sale"
-                  ? "bg-red-500"
-                  : "bg-gray-400"
-              }`}
-            >
-              {tag}
+          {/* BADGE CONTAINER */}
+          <div className="absolute top-2 left-2 right-2 z-10 flex justify-between pointer-events-none">
+            {/* Left Badge (tag) */}
+            <div className="flex flex-col gap-1">
+              {tag && (
+                <div
+                  className={`
+                    text-white font-semibold 
+                    px-2 py-0.5 sm:px-3 sm:py-1 
+                    text-[10px] sm:text-xs 
+                    rounded-full shadow 
+                    ${
+                      tag === "Top Seller"
+                        ? "bg-yellow-400"
+                        : tag === "On Sale"
+                        ? "bg-red-500"
+                        : "bg-gray-500"
+                    }
+                  `}
+                >
+                  {tag}
+                </div>
+              )}
             </div>
-          )}
 
-          {/* New Arrival Tag */}
-          {isNewArrival && (
-            <div className="absolute top-2 right-2 text-white font-bold text-xs px-2 py-1 rounded z-10 bg-green-500">
-              New Arrival
+            {/* Right Badge (New Arrival) */}
+            <div className="flex flex-col gap-1 items-end">
+              {isNewArrival && (
+                <div
+                  className="
+                    text-white font-semibold 
+                    px-2 py-0.5 sm:px-3 sm:py-1 
+                    text-[10px] sm:text-xs 
+                    rounded-full shadow bg-green-500
+                  "
+                >
+                  New Arrival
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="relative w-full h-64 sm:h-72 md:h-80">
             <Image
@@ -53,7 +80,9 @@ export default function ProductCard({ product, small = false }) {
 
         {/* Product Info */}
         <CardContent className="p-4">
-          <CardTitle className="text-lg font-medium text-amber-800">{title}</CardTitle>
+          <CardTitle className="text-lg font-medium text-amber-800">
+            {title}
+          </CardTitle>
           <p className="text-amber-700 font-semibold mt-1">{price} EGP</p>
 
           {/* Ratings */}

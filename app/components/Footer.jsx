@@ -7,21 +7,21 @@ import { FaFacebookF, FaInstagram } from "react-icons/fa";
 export default function Footer() {
   return (
     <footer className="bg-[#fdfaf8] text-brown-800 py-10 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-6">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-10">
 
         {/* Left Side: Contact & Quick Links */}
-        <div className="flex flex-col md:flex-row gap-12">
+        <div className="flex flex-col md:flex-row gap-10 md:gap-20 w-full">
           {/* Contact Info */}
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-start md:items-start text-center md:text-left">
             <h2 className="font-semibold text-lg mb-3">Contact Us</h2>
             <p className="text-sm mb-2">Email: info@example.com</p>
             <p className="text-sm mb-2">Phone: +20 102 715 7089 - +20 100 104 1499</p>
-            <div className="flex gap-4 mt-2">
+            <div className="flex gap-4 mt-2 justify-center md:justify-start">
               <a
                 href="https://www.facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 transition-colors"
+                className="text-blue-500 transition-colors hover:text-blue-700"
               >
                 <FaFacebookF size={20} />
               </a>
@@ -29,7 +29,7 @@ export default function Footer() {
                 href="https://www.instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-pink-500 transition-colors"
+                className="text-pink-500 transition-colors hover:text-pink-700"
               >
                 <FaInstagram size={20} />
               </a>
@@ -37,7 +37,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <h2 className="font-semibold text-lg mb-3">Quick Links</h2>
             <ul className="text-sm space-y-1">
               <li>
@@ -65,7 +65,7 @@ export default function Footer() {
         </div>
 
         {/* Right Side: Logo & Brand */}
-        <div className="flex flex-col items-center md:items-end">
+        <div className="flex flex-col items-center md:items-end mt-6 md:mt-0">
           <Image
             src="/lgo.jpg"
             alt="قَمَرْ Logo"
@@ -73,9 +73,10 @@ export default function Footer() {
             height={120}
             className="mb-3 rounded-full"
           />
-          <h1 className="text-2xl font-bold">قَمَرْ</h1>
+          <h1 className="text-2xl font-bold text-center md:text-right">قَمَرْ</h1>
           <p className="text-sm mt-2 text-brown-600 text-center md:text-right">
-          أوشحة وأغطية فاخرة، مصنوعة يدويًا من أجل الأناقة والأسلوب.          </p>
+            أوشحة وأغطية فاخرة، مصنوعة يدويًا من أجل الأناقة والأسلوب.
+          </p>
         </div>
       </div>
 
