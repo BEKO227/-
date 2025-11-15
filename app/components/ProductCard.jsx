@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function ProductCard({ product, small = false }) {
-  const { title, price, ratingsAverage, ratingsQuantity, imageCover, tag, slug } = product;
+  const { title, price, ratingsAverage, ratingsQuantity, imageCover, tag, isNewArrival, slug } = product;
 
   const fullStars = Math.floor(ratingsAverage);
   const hasHalfStar = ratingsAverage % 1 >= 0.5;
@@ -19,6 +19,7 @@ export default function ProductCard({ product, small = false }) {
       >
         {/* Product Image */}
         <CardHeader className="p-0 relative">
+          {/* Existing Tag */}
           {tag && (
             <div
               className={`absolute top-2 left-2 text-white font-bold text-xs px-2 py-1 rounded z-10 ${
@@ -32,6 +33,14 @@ export default function ProductCard({ product, small = false }) {
               {tag}
             </div>
           )}
+
+          {/* New Arrival Tag */}
+          {isNewArrival && (
+            <div className="absolute top-2 right-2 text-white font-bold text-xs px-2 py-1 rounded z-10 bg-green-500">
+              New Arrival
+            </div>
+          )}
+
           <div className="relative w-full h-64 sm:h-72 md:h-80">
             <Image
               src={imageCover}

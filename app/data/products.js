@@ -7,6 +7,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 12,
     tag: "Top Seller",
+    isNewArrival: true,
     slug: "classic-beige",
     description:
       "A timeless beige scarf crafted from soft, breathable fabric. Perfect for daily styling and effortless elegance.",
@@ -19,6 +20,7 @@ export const allScarfs = [
     ratingsAverage: 4,
     ratingsQuantity: 8,
     tag: "On Sale",
+    isNewArrival: true,
     slug: "mocha-wrap",
     description:
       "A cozy mocha-toned wrap designed for warmth and style. Ideal for chilly evenings and layered outfits.",
@@ -31,6 +33,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 15,
     tag: "Top Seller",
+    isNewArrival: false,
     slug: "cream-elegance",
     description:
       "A luxurious cream scarf offering a gentle, elegant aesthetic. Perfect for classy occasions and soft-toned outfits.",
@@ -43,6 +46,7 @@ export const allScarfs = [
     ratingsAverage: 4,
     ratingsQuantity: 10,
     tag: "Top Seller",
+    isNewArrival: true,
     slug: "golden-shine",
     description:
       "A golden-toned scarf with a soft shimmer, adding confidence and brightness to any look.",
@@ -55,6 +59,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 20,
     tag: "On Sale",
+    isNewArrival: false,
     slug: "elegant-espresso",
     description:
       "A deep espresso-colored scarf that blends sophistication with comfort. A perfect match for earthy outfits.",
@@ -67,6 +72,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 12,
     tag: "Top Seller",
+    isNewArrival: true,
     slug: "classic-beige",
     description:
       "A timeless beige scarf crafted from soft, breathable fabric. Perfect for daily styling and effortless elegance.",
@@ -79,6 +85,7 @@ export const allScarfs = [
     ratingsAverage: 4,
     ratingsQuantity: 8,
     tag: "On Sale",
+    isNewArrival: true,
     slug: "mocha-wrap",
     description:
       "A cozy mocha-toned wrap designed for warmth and style. Ideal for chilly evenings and layered outfits.",
@@ -91,6 +98,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 15,
     tag: "Top Seller",
+    isNewArrival: false,
     slug: "cream-elegance",
     description:
       "A luxurious cream scarf offering a gentle, elegant aesthetic. Perfect for classy occasions and soft-toned outfits.",
@@ -102,24 +110,25 @@ export const allScarfs = [
     price: 39.99,
     ratingsAverage: 4,
     ratingsQuantity: 10,
-    tag: "",
+    tag: "Top Seller",
+    isNewArrival: true,
     slug: "golden-shine",
     description:
       "A golden-toned scarf with a soft shimmer, adding confidence and brightness to any look.",
   },
   {
-    id: 10,
+    id:10,
     title: "Elegant Espresso",
     imageCover: "/scarf5.webp",
     price: 27.99,
     ratingsAverage: 5,
     ratingsQuantity: 20,
     tag: "On Sale",
+    isNewArrival: false,
     slug: "elegant-espresso",
     description:
       "A deep espresso-colored scarf that blends sophistication with comfort. A perfect match for earthy outfits.",
-  },
-  {
+  }, {
     id: 11,
     title: "Classic Beige",
     imageCover: "/scarf1.webp",
@@ -127,6 +136,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 12,
     tag: "Top Seller",
+    isNewArrival: true,
     slug: "classic-beige",
     description:
       "A timeless beige scarf crafted from soft, breathable fabric. Perfect for daily styling and effortless elegance.",
@@ -139,6 +149,7 @@ export const allScarfs = [
     ratingsAverage: 4,
     ratingsQuantity: 8,
     tag: "On Sale",
+    isNewArrival: true,
     slug: "mocha-wrap",
     description:
       "A cozy mocha-toned wrap designed for warmth and style. Ideal for chilly evenings and layered outfits.",
@@ -151,6 +162,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 15,
     tag: "Top Seller",
+    isNewArrival: false,
     slug: "cream-elegance",
     description:
       "A luxurious cream scarf offering a gentle, elegant aesthetic. Perfect for classy occasions and soft-toned outfits.",
@@ -162,7 +174,8 @@ export const allScarfs = [
     price: 39.99,
     ratingsAverage: 4,
     ratingsQuantity: 10,
-    tag: "",
+    tag: "Top Seller",
+    isNewArrival: true,
     slug: "golden-shine",
     description:
       "A golden-toned scarf with a soft shimmer, adding confidence and brightness to any look.",
@@ -175,6 +188,7 @@ export const allScarfs = [
     ratingsAverage: 5,
     ratingsQuantity: 20,
     tag: "On Sale",
+    isNewArrival: false,
     slug: "elegant-espresso",
     description:
       "A deep espresso-colored scarf that blends sophistication with comfort. A perfect match for earthy outfits.",

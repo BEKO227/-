@@ -16,7 +16,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { label: "New Arrivals", href: "#new-arrivals" },
+    { label: "New Arrivals", href: "/NewArrvial" },
     { label: "Top Sellers", href: "/topsellers" },
     { label: "All Scarfs", href: "/AllScarfs" },
     { label: "Stylings", href: "#stylings" },

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Autoplay from "embla-carousel-autoplay";
-import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 import {
   Carousel,
   CarouselContent,
@@ -10,19 +10,14 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-
-const scarves = [
-  { name: "Silk Beige", image: "/scarf1.webp" },
-  { name: "Coffee Wrap", image: "/scarf2.jpg" },
-  { name: "Soft Cream", image: "/scarf3.webp" },
-  { name: "Golden Threads", image: "/scarf4.jpg" },
-  { name: "Elegant Wrap", image: "/scarf5.webp" },
-];
+import { allScarfs } from "../data/products";
 
 export default function NewArrival() {
   const autoplay = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
+
+  const newArrivals = allScarfs.filter((scarf) => scarf.isNewArrival);
 
   return (
     <section id="new-arrivals" className="relative w-full ms-2">
@@ -33,20 +28,22 @@ export default function NewArrival() {
         onMouseLeave={autoplay.current.reset}
       >
         <CarouselContent className="w-full">
-          {scarves.map((scarf, index) => (
+          {newArrivals.map((scarf, index) => (
             <CarouselItem key={index} className="w-full">
-              <div className="relative w-full h-[80vh] flex flex-col justify-center items-center">
-                <img
-                  src={scarf.image}
-                  alt={scarf.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="relative z-10 bg-black/40 px-6 py-3 rounded-lg">
-                  <h2 className="text-white text-4xl font-semibold">
-                    {scarf.name}
-                  </h2>
+              <Link href={`/products/${scarf.id}`}>
+                <div className="relative w-full h-[80vh] flex flex-col justify-center items-center cursor-pointer">
+                  <img
+                    src={scarf.imageCover}
+                    alt={scarf.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="relative z-10 bg-black/40 px-6 py-3 rounded-lg">
+                    <h2 className="text-white text-4xl font-semibold">
+                      {scarf.title}
+                    </h2>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </CarouselItem>
           ))}
         </CarouselContent>
