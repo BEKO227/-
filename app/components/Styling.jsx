@@ -24,7 +24,7 @@ export default function TopSellers() {
 
   return (
     <section className="py-16 px-6 bg-beige-50">
-      <h2 className="text-3xl font-semibold text-brown-900 text-center mb-10">
+      <h2 className="text-3xl font-semibold text-amber-900 text-center mb-10">
         Styling
       </h2>
 
@@ -46,13 +46,13 @@ export default function TopSellers() {
         <div className="flex justify-between w-32 mt-4">
           <button
             onClick={prev}
-            className="bg-brown-700 text-beige-50 p-2 rounded-full hover:bg-coffee-700 transition"
+            className="bg-amber-700 text-beige-50 p-2 rounded-full hover:bg-coffee-700 transition"
           >
             <FaArrowLeft />
           </button>
           <button
             onClick={next}
-            className="bg-brown-700 text-beige-50 p-2 rounded-full hover:bg-coffee-700 transition"
+            className="bg-amber-700 text-beige-50 p-2 rounded-full hover:bg-coffee-700 transition"
           >
             <FaArrowRight />
           </button>

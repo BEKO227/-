@@ -6,7 +6,6 @@ import TopSellers from './components/TopSeller';
 import AllScarfsSection from './components/AllScarf';
 import { FaWhatsapp } from "react-icons/fa"; // Using react-icons
 import Footer from './components/Footer';
-import StylingSection from './components/Styling';
 import NewArrival from './components/NewArrvial';
 
 export default function Home() {
@@ -21,7 +20,6 @@ export default function Home() {
       <NewArrival/>
       <TopSellers/>
       <AllScarfsSection/>
-      <StylingSection/>
       <Footer/>
 
       {/* WhatsApp Button */}

@@ -11,6 +11,8 @@ export const allScarfs = [
     slug: "classic-beige",
     description:
       "A timeless beige scarf crafted from soft, breathable fabric. Perfect for daily styling and effortless elegance.",
+    styleVideo: "https://youtu.be/-ExVRCJ0Jrw?si=GBLywPPgU8vihUUz",
+
   },
   {
     id: 2,

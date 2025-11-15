@@ -15,18 +15,18 @@ export default function TopSellersPage() {
         {/* Left: Home Button */}
         <Link
           href="/"
-          className="py-2 px-4 bg-brown-800 border text-amber-950 rounded-full hover:bg-brown-700 transition-colors"
+          className="py-2 px-4  border text-amber-950 rounded-full hover:bg-amber-700 transition-colors"
         >
           🏚️
         </Link>
 
         {/* Right: Text */}
-        <div className="text-2xl font-bold text-brown-700">قَمَرْ</div>
+        <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
       </div>
     </div>
     <section className="py-20 bg-[#fdfaf7]">
       <motion.h1
-        className="text-4xl font-bold text-center text-brown-800 mb-16 tracking-wide uppercase"
+        className="text-4xl font-bold text-center text-amber-800 mb-16 tracking-wide uppercase"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}

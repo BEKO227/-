@@ -57,7 +57,7 @@ export default function Navbar() {
         </div>
 
         {/* Text on the right */}
-        <div className="text-2xl font-bold text-brown-700">قَمَرْ</div>
+        <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
       </div>
 
       {/* Mobile Navbar */}
@@ -65,7 +65,7 @@ export default function Navbar() {
         {/* Hamburger on the left */}
         <Button
           variant="outline"
-          className="text-brown-700 border-brown-700"
+          className="text-amber-700 border-amber-700"
           onClick={() => setOpen(!open)}
         >
           <Menu size={20} />
@@ -83,7 +83,7 @@ export default function Navbar() {
         </div>
 
         {/* Text on the right */}
-        <div className="text-xl font-bold text-brown-700">قَمَرْ</div>
+        <div className="text-xl font-bold text-amber-700">قَمَرْ</div>
       </div>
 
       {/* Mobile Menu Drawer */}
@@ -93,7 +93,7 @@ export default function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="text-brown-700 font-medium text-lg hover:text-brown-800"
+              className="text-amber-700 font-medium text-lg hover:text-amber-800"
               onClick={() => setOpen(false)}
             >
               {link.label}

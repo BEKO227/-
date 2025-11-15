@@ -14,17 +14,17 @@ export default function AllScarfsPage() {
           {/* Left: Home Button */}
           <Link
             href="/"
-            className="py-2 px-4 bg-brown-800 border text-amber-950 rounded-full hover:bg-brown-700 transition-colors"
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors"
           >
             🏚️
           </Link>
 
           {/* Right: Text */}
-          <div className="text-2xl font-bold text-brown-700">قَمَرْ</div>
+          <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
           </div>
       </div>
     <section className="py-16 px-6 bg-beige-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-brown-900 text-center mb-10">
+      <h1 className="text-3xl font-bold text-amber-900 text-center mb-10">
         All Scarfs
       </h1>
 

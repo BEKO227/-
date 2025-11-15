@@ -16,20 +16,20 @@ export default function NewArrivalPage() {
         {/* Left: Home Button */}
         <Link   
           href="/"
-          className="py-2 px-4 bg-brown-800 border text-amber-950 rounded-full hover:bg-brown-700 transition-colors"
+          className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors"
         >
           🏚️
         </Link>
 
         {/* Right: Text */}
-        <div className="text-2xl font-bold text-brown-700">قَمَرْ</div>
+        <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
       </div>
     </div>
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-brown-800 mb-8">New Arrivals</h1>
+      <h1 className="text-3xl font-bold text-amber-800 mb-8">New Arrivals</h1>
 
       {newArrivals.length === 0 ? (
-        <p className="text-brown-700 text-lg">No new arrivals at the moment.</p>
+        <p className="text-amber-700 text-lg">No new arrivals at the moment.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {newArrivals.map((product) => (

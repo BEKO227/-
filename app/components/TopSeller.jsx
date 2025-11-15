@@ -11,7 +11,7 @@ export default function TopSellers() {
   return (
     <section className="py-20 bg-[#fdfaf7] relative overflow-hidden">
       <motion.h2
-        className="text-4xl font-bold text-center text-brown-800 mb-16 tracking-wide uppercase"
+        className="text-4xl font-bold text-center text-amber-800 mb-16 tracking-wide uppercase"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
@@ -85,7 +85,7 @@ export default function TopSellers() {
       {/* View More Button */}
       <div className="mt-6 md:mt-20 text-center">
         <Link href="/topsellers">
-          <button className="px-6 py-3 rounded-full bg-brown-700 border border-amber-950 text-beige-50 font-semibold hover:bg-coffee-700 transition-colors duration-300 cursor-pointer hover:scale-105">
+          <button className="px-6 py-3 rounded-full border border-amber-900 text-amber-900 font-semibold hover:bg-coffee-700 transition-colors duration-300 cursor-pointer hover:scale-105">
             View More
           </button>
         </Link>

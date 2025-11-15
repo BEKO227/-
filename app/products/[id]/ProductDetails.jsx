@@ -21,13 +21,13 @@ export default function ProductDetails({ id }) {
           {/* Left: Home Button */}
           <Link
             href="/"
-            className="py-2 px-4 bg-brown-800 border text-amber-950 rounded-full hover:bg-brown-700 transition-colors"
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors"
           >
             🏚️
           </Link>
 
           {/* Right: Text */}
-          <div className="text-2xl font-bold text-brown-700">قَمَرْ</div>
+          <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
         </div>
       </div>
 
@@ -52,11 +52,11 @@ export default function ProductDetails({ id }) {
 
         {/* DETAILS */}
         <div className="flex-1 flex flex-col justify-center">
-          <h1 className="text-4xl font-bold text-brown-800 mb-4">{scarf.title}</h1>
+          <h1 className="text-4xl font-bold text-amber-800 mb-4">{scarf.title}</h1>
 
           <p className="text-gray-700 mt-4 leading-relaxed">{scarf.description}</p>
 
-          <p className="text-2xl font-semibold text-brown-700 mb-4">${scarf.price}</p>
+          <p className="text-2xl font-semibold text-amber-700 mb-4">${scarf.price}</p>
 
           <p className="text-lg text-gray-700 mb-2">
             ⭐ {scarf.ratingsAverage} ({scarf.ratingsQuantity} reviews)
@@ -64,7 +64,7 @@ export default function ProductDetails({ id }) {
 
           {scarf.tag && (
             <div
-              className={`inline-block text-brown-800 px-3 py-1 rounded-full text-sm my-3 text-center ${
+              className={`inline-block text-amber-800 px-3 py-1 rounded-full text-sm my-3 text-center ${
                 scarf.tag === "Top Seller"
                   ? "bg-yellow-400"
                   : scarf.tag === "On Sale"
@@ -74,6 +74,16 @@ export default function ProductDetails({ id }) {
             >
               {scarf.tag}
             </div>
+          )}
+
+          {/* How to Style Button */}
+          {scarf.styleVideo && (
+            <Link
+              href={`/products/${scarf.id}/style`}
+              className="mt-4 inline-block bg-amber-800 text-white px-6 py-3 rounded-full font-semibold hover:bg-amber-700 transition-colors text-center"
+            >
+              How to Style
+            </Link>
           )}
         </div>
       </div>

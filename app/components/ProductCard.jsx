@@ -53,8 +53,8 @@ export default function ProductCard({ product, small = false }) {
 
         {/* Product Info */}
         <CardContent className="p-4">
-          <CardTitle className="text-lg font-medium text-brown-800">{title}</CardTitle>
-          <p className="text-brown-700 font-semibold mt-1">{price} EGP</p>
+          <CardTitle className="text-lg font-medium text-amber-800">{title}</CardTitle>
+          <p className="text-amber-700 font-semibold mt-1">{price} EGP</p>
 
           {/* Ratings */}
           <div className="flex items-center gap-1 mt-2 text-yellow-400">
