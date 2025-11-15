@@ -64,7 +64,7 @@ export default function ProductDetails({ id }) {
 
           {scarf.tag && (
             <div
-              className={`inline-block text-amber-800 px-3 py-1 rounded-full text-sm my-3 text-center ${
+              className={`inline-block text-white text-lg px-3 py-1 rounded-full my-3 text-center ${
                 scarf.tag === "Top Seller"
                   ? "bg-yellow-400"
                   : scarf.tag === "On Sale"

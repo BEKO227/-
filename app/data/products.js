@@ -26,6 +26,8 @@ export const allScarfs = [
     slug: "mocha-wrap",
     description:
       "A cozy mocha-toned wrap designed for warmth and style. Ideal for chilly evenings and layered outfits.",
+    styleVideo: "https://youtu.be/-ExVRCJ0Jrw?si=GBLywPPgU8vihUUz",
+
   },
   {
     id: 3,
@@ -39,6 +41,9 @@ export const allScarfs = [
     slug: "cream-elegance",
     description:
       "A luxurious cream scarf offering a gentle, elegant aesthetic. Perfect for classy occasions and soft-toned outfits.",
+    
+    styleVideo: "https://youtu.be/-ExVRCJ0Jrw?si=GBLywPPgU8vihUUz",
+
   },
   {
     id: 4,
@@ -52,6 +57,7 @@ export const allScarfs = [
     slug: "golden-shine",
     description:
       "A golden-toned scarf with a soft shimmer, adding confidence and brightness to any look.",
+    styleVideo: "https://youtu.be/-ExVRCJ0Jrw?si=GBLywPPgU8vihUUz",
   },
   {
     id: 5,
@@ -65,6 +71,7 @@ export const allScarfs = [
     slug: "elegant-espresso",
     description:
       "A deep espresso-colored scarf that blends sophistication with comfort. A perfect match for earthy outfits.",
+    styleVideo: "https://youtu.be/-ExVRCJ0Jrw?si=GBLywPPgU8vihUUz",
   },
   {
     id: 6,
