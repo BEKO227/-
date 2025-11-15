@@ -16,11 +16,10 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { label: "New Arrivals", href: "/NewArrvial" },
-    { label: "Top Sellers", href: "/topsellers" },
-    { label: "All Scarfs", href: "/AllScarfs" },
-    { label: "Stylings", href: "#stylings" },
-    { label: "Contact Us", href: "/ContactUs" },
+    { label: "NEW ARRIVALS", href: "/NewArrvial" },
+    { label: "TOP SELLERS", href: "/topsellers" },
+    { label: "ALL SCARFS", href: "/AllScarfs" },
+    { label: "CONTACT US", href: "#footer" },
   ];
 
   return (
@@ -46,18 +45,27 @@ export default function Navbar() {
         </div>
 
         {/* Logo image centered */}
-        <div className="absolute left-1/2 transform -translate-x-1/2">
+        <div className="rounded-full absolute left-1/2 transform -translate-x-1/2">
           <Image
             src="/logo.png"
             alt="قَمَرْ Logo"
-            width={50}
-            height={50}
-            className="object-contain"
+            width={80}
+            height={80}
+            className="object-contain rounded-full"
           />
         </div>
 
         {/* Text on the right */}
-        <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
+        <div
+  style={{
+    fontFamily: "'Diwani Letter', sans-serif",
+    fontSize: "2rem",
+    fontWeight: "bold",
+    color: "#b45309",
+  }}
+>
+  قَمَرْ
+</div>
       </div>
 
       {/* Mobile Navbar */}

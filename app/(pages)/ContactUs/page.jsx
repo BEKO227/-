@@ -93,14 +93,6 @@ export default function ContactPage() {
         <FaFacebookF />
       </a>
       <a
-        href="https://www.linkedin.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-gray-600 hover:text-blue-500 transition text-2xl"
-      >
-        <FaLinkedinIn />
-      </a>
-      <a
         href="https://www.instagram.com"
         target="_blank"
         rel="noopener noreferrer"
