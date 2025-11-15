@@ -91,7 +91,16 @@ export default function Navbar() {
         </div>
 
         {/* Text on the right */}
-        <div className="text-xl font-bold text-amber-700">قَمَرْ</div>
+        <div
+        style={{
+          fontFamily: "'Diwani Letter', sans-serif",
+          fontSize: "2rem",
+          fontWeight: "bold",
+          color: "#b45309",
+        }}
+      >
+        قَمَرْ
+      </div>
       </div>
 
       {/* Mobile Menu Drawer */}
