@@ -20,7 +20,7 @@ export default function Navbar() {
     { label: "Top Sellers", href: "/topsellers" },
     { label: "All Scarfs", href: "/AllScarfs" },
     { label: "Stylings", href: "#stylings" },
-    { label: "Contact Us", href: "#contact-us" },
+    { label: "Contact Us", href: "/ContactUs" },
   ];
 
   return (

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaFacebookF, FaInstagram , FaTiktok , FaYoutube} from "react-icons/fa";
 
 export default function Footer() {
   return (
@@ -14,7 +14,6 @@ export default function Footer() {
           {/* Contact Info */}
           <div className="flex flex-col items-start md:items-start text-center md:text-left">
             <h2 className="font-semibold text-lg mb-3">Contact Us</h2>
-            <p className="text-sm mb-2">Email: info@example.com</p>
             <p className="text-sm mb-2">Phone: +20 102 715 7089 - +20 100 104 1499</p>
             <div className="flex gap-4 mt-2 justify-center md:justify-start">
               <a
@@ -25,6 +24,7 @@ export default function Footer() {
               >
                 <FaFacebookF size={20} />
               </a>
+
               <a
                 href="https://www.instagram.com"
                 target="_blank"
@@ -32,6 +32,24 @@ export default function Footer() {
                 className="text-pink-500 transition-colors hover:text-pink-700"
               >
                 <FaInstagram size={20} />
+              </a>
+
+              <a
+                href="https://www.tiktok.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black transition-colors hover:opacity-70"
+              >
+                <FaTiktok size={20} />
+              </a>
+
+              <a
+                href="https://www.youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-red-600 transition-colors hover:text-red-800"
+              >
+                <FaYoutube size={22} />
               </a>
             </div>
           </div>
