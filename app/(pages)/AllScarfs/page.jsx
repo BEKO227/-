@@ -5,6 +5,7 @@ import ProductCard from './../../components/ProductCard';
 import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { motion } from "framer-motion";
 
 export default function AllScarfsPage() {
   const [scarves, setscarves] = useState([]);
@@ -18,12 +19,28 @@ export default function AllScarfsPage() {
         fetchedscarves.push({ id: doc.id, ...doc.data() });
       });
       setscarves(fetchedscarves);
-      console.log("fetched scarves",fetchedscarves);
+      console.log("fetched scarves", fetchedscarves);
       setLoading(false);
     }
 
     fetchscarves();
   }, []);
+
+  // Motion variants for cards
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1, // Stagger cards
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   return (
     <>
@@ -50,11 +67,18 @@ export default function AllScarfsPage() {
         {loading ? (
           <p className="text-center text-amber-800 text-xl">Loading scarfs...</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <motion.div
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {scarves.map((product) => (
-              <ProductCard key={product.id} product={product} small={true} />
+              <motion.div key={product.id} variants={cardVariants}>
+                <ProductCard product={product} small={true} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </section>
     </>

@@ -5,10 +5,12 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/aut
 import { auth } from "@/lib/firebase";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react"; // Install lucide-react if not installed
 
 export default function Signin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // <-- new state
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
@@ -30,7 +32,7 @@ export default function Signin() {
 
     try {
       await sendPasswordResetEmail(auth, email, {
-        url: "https://qamar-scarves.vercel.app/auth/signin", // redirect after reset
+        url: "https://qamar-scarves.vercel.app/auth/signin",
         handleCodeInApp: true
       });
       toast.success("Password reset email sent! Check your inbox.");
@@ -60,14 +62,24 @@ export default function Signin() {
             placeholder="Email"
             className="border border-amber-300 rounded-xl p-4 w-full text-lg"
           />
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="border border-amber-300 rounded-xl p-4 w-full text-lg"
-          />
+
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"} // toggle type
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="border border-amber-300 rounded-xl p-4 w-full text-lg pr-12"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
           <button
             type="submit"

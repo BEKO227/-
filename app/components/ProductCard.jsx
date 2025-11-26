@@ -19,7 +19,7 @@ export default function ProductCard({ product, small = false }) {
   }, [product.stock]);
 
   const handleAddToCart = (e) => {
-    e.stopPropagation(); // <-- IMPORTANT so card click doesn't trigger
+    e.stopPropagation(); // <-- Important so card click doesn't trigger
     if (!user) {
       router.push("/auth/signin");
       return;
@@ -32,10 +32,22 @@ export default function ProductCard({ product, small = false }) {
     router.push(`/products/${product.id}`);
   };
 
+  // Badge colors
+  const badgeClasses = {
+    "New Arrival": "bg-blue-500",
+    "Top Seller": "bg-green-500",
+    "On Sale": "bg-red-500",
+  };
+
+  const badges = [];
+  if (product.isNewArrival) badges.push("New Arrival");
+  if (product.isTopSeller) badges.push("Top Seller");
+  if (product.isOnSale) badges.push("On Sale");
+
   return (
     <Card
       onClick={goToDetails}
-      className="shadow-md rounded-2xl overflow-hidden w-full max-w-[320px] mx-auto cursor-pointer hover:shadow-xl transition"
+      className="shadow-md rounded-2xl overflow-hidden w-full max-w-[320px] mx-auto cursor-pointer hover:shadow-xl transition relative"
     >
       <CardHeader className="p-0 relative">
         <div className="relative w-full h-64">
@@ -45,6 +57,18 @@ export default function ProductCard({ product, small = false }) {
             fill
             className="object-cover rounded-t-2xl"
           />
+        </div>
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
+          {badges.map((badge) => (
+            <span
+              key={badge}
+              className={`text-white text-xs font-bold px-2 py-1 rounded-full ${badgeClasses[badge]}`}
+            >
+              {badge}
+            </span>
+          ))}
         </div>
       </CardHeader>
 

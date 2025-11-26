@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,8 +9,8 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react"; // Install lucide-react if not installed
 
-// Zod schema
 const signupSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
@@ -25,6 +26,7 @@ const signupSchema = z.object({
 });
 
 export default function Signup() {
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -49,12 +51,7 @@ export default function Signup() {
       }
 
       // Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      );
-
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const uid = userCredential.user.uid;
 
       // Store extra info in Firestore
@@ -67,7 +64,6 @@ export default function Signup() {
         createdAt: new Date().toISOString(),
       });
 
-      // Optionally create duplicate indexes
       await setDoc(doc(db, "usersByEmail", data.email), { uid });
       await setDoc(doc(db, "usersByPhone", data.phone), { uid });
 
@@ -105,7 +101,21 @@ export default function Signup() {
             <option value="female">Female</option>
           </select>
 
-          <input type="password" {...register("password")} placeholder="Password" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              {...register("password")}
+              placeholder="Password"
+              className="border border-amber-300 rounded-xl p-4 w-full text-lg pr-12"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           {errors.password && <span className="text-red-500">{errors.password.message}</span>}
 
           <button type="submit" className="bg-amber-700 hover:bg-amber-800 text-white font-semibold w-full py-4 rounded-xl text-lg mt-2">Sign Up</button>

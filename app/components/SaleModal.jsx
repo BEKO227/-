@@ -7,7 +7,7 @@ import { db } from "@/lib/firebase";
 export default function SaleModal({ isOpen, onClose }) {
   const [data, setData] = useState({
     title: "Special Sale!",
-    description: "Enjoy discounts this week!"
+    description: "",
   });
 
   useEffect(() => {
@@ -18,14 +18,14 @@ export default function SaleModal({ isOpen, onClose }) {
           const d = snapshot.data();
           setData({
             title: d.title || "Special Sale!",
-            description: d.description || "Enjoy discounts this week!"
+            description: d.description
           });
         }
       },
       () => {
         setData({
           title: "Special Sale!",
-          description: "Enjoy discounts this week!"
+          description: "",
         });
       }
     );

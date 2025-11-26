@@ -5,6 +5,7 @@ import ProductCard from "../../components/ProductCard";
 import Link from "next/link";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
+import { motion } from "framer-motion";
 
 export default function NewArrivalPage() {
   const [newArrivals, setNewArrivals] = useState([]);
@@ -21,6 +22,20 @@ export default function NewArrivalPage() {
 
     fetchNewArrivals();
   }, []);
+
+  // Motion variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   return (
     <>
@@ -39,11 +54,18 @@ export default function NewArrivalPage() {
         ) : newArrivals.length === 0 ? (
           <p className="text-amber-700 text-lg">No new arrivals at the moment.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {newArrivals.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <motion.div key={product.id} variants={cardVariants}>
+                <ProductCard product={product} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </>

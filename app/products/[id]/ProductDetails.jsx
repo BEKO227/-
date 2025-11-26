@@ -133,7 +133,24 @@ const handleAddToCart = async () => {
             height={400}
             className="rounded-lg shadow-lg"
           />
-        </div>
+            <div className="absolute top-3 left-3 flex flex-col gap-1">
+            {scarf.isNewArrival && (
+              <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                New Arrival
+              </span>
+            )}
+            {scarf.isTopSeller && (
+              <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                Top Seller
+              </span>
+            )}
+            {scarf.isOnSale && (
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                On Sale
+              </span>
+            )}
+          </div>
+          </div>
 
         <div className="flex-1 flex flex-col justify-center">
           <h1 className="text-4xl font-bold text-amber-800 mb-4">
