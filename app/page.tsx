@@ -1,15 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import Image from "next/image";
+import { FaWhatsapp } from "react-icons/fa";
 
 import SaleBar from './components/SaleBar';
-import Navbar from './components/Navbar';
 import TopSellers from './components/TopSeller';
 import AllScarfsSection from './components/AllScarf';
 import NewArrival from './components/NewArrvial';
 import Footer from './components/Footer';
 import SaleModal from './components/SaleModal';
-import { FaWhatsapp } from "react-icons/fa";
 
 export default function Home() {
   const whatsappNumber = "+201027157089";
@@ -18,14 +16,9 @@ export default function Home() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Show modal every time the user visits home
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const hasSeenModal = localStorage.getItem("hasSeenSaleModal");
-      if (!hasSeenModal) {
-        setIsModalOpen(true);
-        localStorage.setItem("hasSeenSaleModal", "true");
-      }
-    }
+    setIsModalOpen(true);
   }, []);
 
   return (
@@ -33,8 +26,8 @@ export default function Home() {
       {/* Sale Modal */}
       <SaleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
+      {/* Page Sections */}
       <SaleBar />
-      <Navbar />
       <NewArrival />
       <TopSellers />
       <AllScarfsSection />

@@ -1,14 +1,46 @@
 "use client";
 import { useParams } from "next/navigation";
-import { allScarfs } from "../../../data/products";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../../../lib/firebase";
 
 export default function StylePage() {
   const params = useParams();
   const { id } = params;
 
-  const scarf = allScarfs.find((item) => item.id === Number(id));
+  const [scarf, setScarf] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchScarf = async () => {
+      try {
+        const docRef = doc(db, "scarves", id.toString());
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setScarf({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          setScarf(null);
+        }
+      } catch (error) {
+        console.error("Error fetching scarf:", error);
+        setScarf(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScarf();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-xl text-amber-700">
+        Loading product...
+      </div>
+    );
+  }
 
   if (!scarf) {
     return (
@@ -18,12 +50,12 @@ export default function StylePage() {
     );
   }
 
-  // Function to convert YouTube URLs to embed format
+  // Convert YouTube URL to embed format
   const getEmbedUrl = (url) => {
     try {
       const parsed = new URL(url);
       if (parsed.hostname.includes("youtu.be")) {
-        const videoId = parsed.pathname.slice(1); // remove leading "/"
+        const videoId = parsed.pathname.slice(1);
         return `https://www.youtube.com/embed/${videoId}`;
       } else if (parsed.hostname.includes("youtube.com")) {
         const videoId = parsed.searchParams.get("v");
@@ -53,7 +85,7 @@ export default function StylePage() {
           </h1>
         </div>
 
-        {/* Content Section */}
+        {/* Content */}
         <div className="flex flex-col lg:flex-row gap-10 items-start">
           {/* Video */}
           <div className="flex-1 w-full shadow-lg rounded-xl overflow-hidden">
@@ -79,7 +111,7 @@ export default function StylePage() {
 
           {/* Product Details */}
           <div className="flex-1 flex flex-col gap-4">
-            <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-xl overflow-hidden shadow-md ">
+            <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-xl overflow-hidden shadow-md">
               <Image
                 src={scarf.imageCover}
                 alt={scarf.title}
@@ -96,6 +128,7 @@ export default function StylePage() {
             <h2 className="text-2xl font-bold text-amber-800">{scarf.title}</h2>
             <p className="text-gray-700 leading-relaxed">{scarf.description}</p>
             <p className="text-2xl font-semibold text-amber-700">${scarf.price}</p>
+
             {scarf.tag && (
               <div
                 className={`inline-block px-3 py-1 rounded-full text-sm text-center font-semibold my-2 ${
@@ -109,6 +142,7 @@ export default function StylePage() {
                 {scarf.tag}
               </div>
             )}
+
             <p className="text-gray-600 mt-2">
               ⭐ {scarf.ratingsAverage} ({scarf.ratingsQuantity} reviews)
             </p>

@@ -61,7 +61,7 @@ export default function Footer() {
             <h2 className="font-semibold text-lg mb-3">Quick Links</h2>
             <ul className="text-sm space-y-1">
               <li>
-                <a href="/NewArrival" className="hover:text-brown-700 transition-colors">
+                <a href="/NewArrvial" className="hover:text-brown-700 transition-colors">
                   New Arrivals
                 </a>
               </li>

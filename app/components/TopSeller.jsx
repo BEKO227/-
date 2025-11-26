@@ -3,9 +3,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { allScarfs } from "../data/products";
+import { allScarfs } from './../../data/products';
 
-const topSellers = allScarfs.filter((item) => item.tag === "Top Seller").slice(0, 3);
+// Updated filter to match new structure
+const topSellers = allScarfs.filter((item) => item.isTopSeller === true).slice(0, 3);
 
 export default function TopSellers() {
   return (
@@ -62,7 +63,7 @@ export default function TopSellers() {
           return (
             <MotionLink
               key={i}
-              href={`/products/${item.id}`}
+              href={`/products/${item.slug}`}
               className="rounded-2xl overflow-hidden shadow-md group relative"
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -75,7 +76,9 @@ export default function TopSellers() {
                 className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-end justify-center">
-                <p className="text-white text-base font-medium mb-4">{item.title}</p>
+                <p className="text-white text-base font-medium mb-4">
+                  {item.title}
+                </p>
               </div>
             </MotionLink>
           );

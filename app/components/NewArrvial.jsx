@@ -10,14 +10,39 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { allScarfs } from "../data/products";
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function NewArrival() {
   const autoplay = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
 
-  const newArrivals = allScarfs.filter((scarf) => scarf.isNewArrival);
+  const [newArrivals, setNewArrivals] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchNewArrivals() {
+      const querySnapshot = await getDocs(collection(db, "scarves"));
+      const scarves = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.isNewArrival) scarves.push({ id: doc.id, ...data });
+      });
+      setNewArrivals(scarves);
+      setLoading(false);
+    }
+
+    fetchNewArrivals();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-16 text-center text-amber-900">
+        Loading new arrivals...
+      </section>
+    );
+  }
 
   return (
     <section id="new-arrivals" className="relative w-full ms-2">
