@@ -2,11 +2,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc, increment, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useCart } from "../../CartContext";
 import { useAuth } from "../../AuthContext";
 import { useRouter } from "next/navigation";
 import { db } from "../../../lib/firebase";
+import toast from "react-hot-toast";
+import { Trash } from "lucide-react";
 
 export default function ProductDetails({ id }) {
   const [scarf, setScarf] = useState(null);
@@ -14,12 +16,16 @@ export default function ProductDetails({ id }) {
   const [userRating, setUserRating] = useState(0);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
 
-  const { addToCart } = useCart();
+  const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
 
+  // Use scarf.id (when available) and compare as strings to avoid type mismatch
+  const itemInCart = scarf ? cart.find((i) => String(i.id) === String(scarf.id)) : undefined;
+
   const fetchScarf = async () => {
     try {
+      setLoading(true);
       const docRef = doc(db, "scarves", id.toString());
       const docSnap = await getDoc(docRef);
 
@@ -38,30 +44,65 @@ export default function ProductDetails({ id }) {
 
   useEffect(() => {
     fetchScarf();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // 🔥 Add to cart AND update Firestore stock
-const handleAddToCart = async () => {
-  try {
-    if (!scarf?.id) {
-      console.error("No scarf ID found");
+  // Add to cart + Firestore stock update
+  const handleAddToCart = async (e) => {
+    e?.stopPropagation();
+    if (!user) {
+      router.push("/auth/signin");
       return;
     }
 
-    const docRef = doc(db, "scarves", String(id));
+    if (!scarf) return;
+    if (scarf.stock <= 0) {
+      toast.error("Out of stock");
+      return;
+    }
 
-    await updateDoc(docRef, {
-      stock: scarf.stock - 1,
-    });
+    try {
+      const docRef = doc(db, "scarves", String(scarf.id));
+      await updateDoc(docRef, { stock: scarf.stock - 1 });
+      addToCart(scarf);
+      toast.success("Product added successfully!");
+      await fetchScarf();
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Something went wrong!");
+    }
+  };
 
-    addToCart(scarf);
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-  }
-};
+  // Decrease quantity handler
+  const handleDecrease = async (e) => {
+    e?.stopPropagation();
+    if (!itemInCart) return;
 
+    if (itemInCart.quantity === 1) {
+      removeFromCart(String(scarf.id));
+      await fetchScarf();
+      return;
+    }
 
-  // ⭐ Submit rating
+    updateQuantity(String(scarf.id), itemInCart.quantity - 1);
+    await fetchScarf();
+  };
+
+  // Increase quantity handler
+  const handleIncrease = async (e) => {
+    e?.stopPropagation();
+    if (!itemInCart || !scarf) return;
+
+    if (itemInCart.quantity >= scarf.stock) {
+      toast.error("Not enough stock available");
+      return;
+    }
+
+    updateQuantity(String(scarf.id), itemInCart.quantity + 1);
+    await fetchScarf();
+  };
+
+  // Rating logic
   const submitRating = async () => {
     if (!user) {
       router.push("/auth/signin");
@@ -74,19 +115,17 @@ const handleAddToCart = async () => {
 
     try {
       const docRef = doc(db, "scarves", scarf.id);
-
-      // Recalculate new rating average
       const newAvg =
         (scarf.ratingsAverage * scarf.ratingsQuantity + userRating) /
         (scarf.ratingsQuantity + 1);
 
       await updateDoc(docRef, {
         ratingsAverage: newAvg,
-        ratingsQuantity: increment(1),
+        ratingsQuantity: (scarf.ratingsQuantity || 0) + 1,
       });
 
       setUserRating(0);
-      fetchScarf();
+      await fetchScarf();
     } catch (err) {
       console.error(err);
     }
@@ -109,6 +148,9 @@ const handleAddToCart = async () => {
       </div>
     );
   }
+
+  // ✅ Disabled button if out of stock
+  const disabled = scarf.stock <= 0;
 
   return (
     <>
@@ -133,7 +175,8 @@ const handleAddToCart = async () => {
             height={400}
             className="rounded-lg shadow-lg"
           />
-            <div className="absolute top-3 left-3 flex flex-col gap-1">
+
+          <div className="absolute top-3 left-3 flex flex-col gap-1">
             {scarf.isNewArrival && (
               <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                 New Arrival
@@ -150,44 +193,80 @@ const handleAddToCart = async () => {
               </span>
             )}
           </div>
-          </div>
+        </div>
 
         <div className="flex-1 flex flex-col justify-center">
           <h1 className="text-4xl font-bold text-amber-800 mb-4">
             {scarf.title}
           </h1>
-          <p className="text-gray-700 mt-4 leading-relaxed">
-            {scarf.description}
-          </p>
+          <p className="text-gray-700 mt-4 leading-relaxed">{scarf.description}</p>
           <p className="text-2xl font-semibold text-amber-700 mb-4">
             {scarf.price} EGP
           </p>
+
           <p className="text-lg text-gray-700 mb-2">
-            ⭐ {scarf.ratingsAverage.toFixed(1)} ({scarf.ratingsQuantity} reviews)
+            ⭐ {(scarf.ratingsAverage || 0).toFixed(1)} ({scarf.ratingsQuantity || 0} reviews)
           </p>
 
           <div className="text-lg mb-4">
-            {scarf.stock > 0 ? 
-              <span className="text-green-600 font-bold">In Stock</span>  
-              : 
-              <span className="text-red-600 font-bold">Out of Stock</span>            
-            }
+            {scarf.stock > 0 ? (
+              <span className="text-green-600 font-bold">In Stock</span>
+            ) : (
+              <span className="text-red-600 font-bold">Out of Stock</span>
+            )}
           </div>
 
-          {/* Stock-based button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={scarf.stock <= 0}
-            className={`mt-4 px-6 py-3 rounded-full text-white ${
-              scarf.stock <= 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-amber-700 hover:bg-amber-800"
-            }`}
-          >
-            {scarf.stock <= 0 ? "Out of Stock" : "Add to Cart"}
-          </button>
+          {/* CART LOGIC */}
+          {!itemInCart ? (
+            <button
+              onClick={handleAddToCart}
+              disabled={disabled}
+              className={`mt-2 w-full py-2 rounded-full font-semibold text-white ${
+                disabled
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-amber-700 hover:bg-amber-800"
+              }`}
+            >
+              {disabled ? "Out of Stock" : "Add to Cart"}
+            </button>
+          ) : (
+            <div
+              className="mt-3 flex items-center justify-between"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {itemInCart.quantity === 1 ? (
+                <button
+                  onClick={() => removeFromCart(scarf.id)}
+                  className="p-2 bg-red-500 text-white rounded-full"
+                >
+                  <Trash size={18} />
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    updateQuantity(scarf.id, itemInCart.quantity - 1)
+                  }
+                  className="px-4 py-2 bg-gray-200 rounded-full text-lg font-bold"
+                >
+                  -
+                </button>
+              )}
 
-          {/* How to Style Button */}
+              <span className="px-4 text-lg font-semibold">
+                {itemInCart.quantity}
+              </span>
+
+              <button
+                onClick={() =>
+                  updateQuantity(scarf.id, itemInCart.quantity + 1)
+                }
+                className="px-4 py-2 bg-gray-200 rounded-full text-lg font-bold"
+              >
+                +
+              </button>
+            </div>
+          )}
+
           {scarf.styleVideo && (
             <Link
               href={`/products/${scarf.id}/style`}
@@ -197,7 +276,7 @@ const handleAddToCart = async () => {
             </Link>
           )}
 
-          {/* ⭐ Rating System */}
+          {/* Rating System */}
           <div className="mt-8 p-4 border rounded-xl bg-white shadow-sm">
             <h3 className="text-xl font-bold text-amber-800 mb-2">
               Rate This Product

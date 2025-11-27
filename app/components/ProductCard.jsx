@@ -3,36 +3,39 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
-import Link from "next/link";
 import { useCart } from "../CartContext";
 import { useAuth } from "../AuthContext";
 import { useRouter } from "next/navigation";
+import { Trash } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function ProductCard({ product, small = false }) {
-  const { addToCart } = useCart();
+  const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
   const [disabled, setDisabled] = useState(false);
+
+  // check if product in cart
+  const itemInCart = cart.find((i) => i.id === product.id);
 
   useEffect(() => {
     setDisabled(product.stock <= 0);
   }, [product.stock]);
 
   const handleAddToCart = (e) => {
-    e.stopPropagation(); // <-- Important so card click doesn't trigger
+    e.stopPropagation();
     if (!user) {
       router.push("/auth/signin");
       return;
     }
     addToCart(product);
+    toast.success("Product added to cart");
   };
 
-  // Redirect when clicking the card
   const goToDetails = () => {
     router.push(`/products/${product.id}`);
   };
 
-  // Badge colors
   const badgeClasses = {
     "New Arrival": "bg-blue-500",
     "Top Seller": "bg-green-500",
@@ -59,7 +62,7 @@ export default function ProductCard({ product, small = false }) {
           />
         </div>
 
-        {/* Badges */}
+        {/* badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {badges.map((badge) => (
             <span
@@ -76,7 +79,10 @@ export default function ProductCard({ product, small = false }) {
         <CardTitle className="text-lg font-medium text-amber-800">
           {product.title}
         </CardTitle>
-        <p className="text-amber-700 font-semibold mt-1">{product.price} EGP</p>
+
+        <p className="text-amber-700 font-semibold mt-1">
+          {product.price} EGP
+        </p>
 
         <p className="mt-2 text-gray-600">
           {product.stock > 0 ? (
@@ -86,17 +92,63 @@ export default function ProductCard({ product, small = false }) {
           )}
         </p>
 
-        <button
-          onClick={handleAddToCart}
-          disabled={disabled}
-          className={`mt-2 w-full py-2 rounded-full font-semibold text-white ${
-            disabled
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-amber-700 hover:bg-amber-800"
-          }`}
-        >
-          {disabled ? "Out of Stock" : "Add to Cart"}
-        </button>
+        {/* ------------------------------ */}
+        {/* CART LOGIC - keeps your UI    */}
+        {/* ------------------------------ */}
+        {!itemInCart ? (
+          /** Add to cart button (same UI) */
+          <button
+            onClick={handleAddToCart}
+            disabled={disabled}
+            className={`mt-2 w-full py-2 rounded-full font-semibold text-white ${
+              disabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-amber-700 hover:bg-amber-800"
+            }`}
+          >
+            {disabled ? "Out of Stock" : "Add to Cart"}
+          </button>
+        ) : (
+          /** Replace add-to-cart with quantity controls */
+          <div
+            className="mt-3 flex items-center justify-between"
+            onClick={(e) => e.stopPropagation()} // stop navigation
+          >
+            {/* If quantity = 1 -> show trash */}
+            {itemInCart.quantity === 1 ? (
+              <button
+                onClick={() => removeFromCart(product.id)}
+                className="p-2 bg-red-500 text-white rounded-full"
+              >
+                <Trash size={18} />
+              </button>
+            ) : (
+              <button
+                onClick={() =>
+                  updateQuantity(product.id, itemInCart.quantity - 1)
+                }
+                className="px-4 py-2 bg-gray-200 rounded-full text-lg font-bold"
+              >
+                -
+              </button>
+            )}
+
+            {/* Quantity */}
+            <span className="px-4 text-lg font-semibold">
+              {itemInCart.quantity}
+            </span>
+
+            {/* Plus */}
+            <button
+              onClick={() =>
+                updateQuantity(product.id, itemInCart.quantity + 1)
+              }
+              className="px-4 py-2 bg-gray-200 rounded-full text-lg font-bold"
+            >
+              +
+            </button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
