@@ -148,7 +148,6 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!authLoading && !placingOrder) {
       if (!user) router.push("/auth/signin");
-      else if (cart.length === 0) router.push("/AllScarfs");
     }
   }, [user, authLoading, cart.length, router, placingOrder]);
   
