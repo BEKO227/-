@@ -19,26 +19,51 @@ import {
 } from "firebase/firestore";
 import toast from "react-hot-toast";
 
+// List of Egyptian governorates
+const governorates = [
+  "Cairo","Alexandria","Giza","Aswan","Asyut","Beheira","Beni Suef","Dakahlia",
+  "Damietta","Faiyum","Gharbia","Ismailia","Kafr El Sheikh","Luxor","Matruh",
+  "Minya","Monufia","New Valley","North Sinai","Port Said","Qalyubia","Qena",
+  "Red Sea","Sharqia","Sohag","South Sinai","Suez"
+];
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  // -------------------------
+  // Form states
+  // -------------------------
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [instaRef, setInstaRef] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(false);
 
+  const [building, setBuilding] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [governorate, setGovernorate] = useState("");
+
+  const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
-
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(0);
 
-  // Listen to free delivery threshold from Firestore
+  // -------------------------
+  // Pre-fill user info
+  // -------------------------
+  useEffect(() => {
+    if (user) {
+      setFullName(user.displayName || "");
+      setPhone(user.phoneNumber || "");
+    }
+  }, [user]);
+
+  // -------------------------
+  // Free delivery threshold listener
+  // -------------------------
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "Sale", "freeDelivery"), (snap) => {
       if (snap.exists()) {
@@ -50,7 +75,7 @@ export default function CheckoutPage() {
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const qualifiesForFreeDelivery = cartTotal >= freeDeliveryThreshold;
-  const deliveryFee = qualifiesForFreeDelivery ? 0 : 50; // 50 EGP if not qualified
+  const deliveryFee = qualifiesForFreeDelivery ? 0 : 50; 
   const total = Math.max(cartTotal - discount + deliveryFee, 0);
 
   // -----------------------------
@@ -77,17 +102,15 @@ export default function CheckoutPage() {
   // -----------------------------
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return toast.error("Enter a promo code.");
-
     const code = promoCode.toUpperCase();
 
     try {
       const promoRef = doc(db, "promocodes", code);
       const promoSnap = await getDoc(promoRef);
-
       if (!promoSnap.exists()) return toast.error("Invalid promo code");
+
       const promo = promoSnap.data();
       const now = new Date();
-
       if (!promo.active) return toast.error("Promo code disabled");
       if (promo.expiresAt.toDate() < now) return toast.error("Promo code expired");
       if (promo.firstOrderOnly && await userHasPreviousOrders())
@@ -101,9 +124,7 @@ export default function CheckoutPage() {
 
       setDiscount(newDiscount);
       setPromoApplied(true);
-
       toast.success(`Promo applied! Saved ${newDiscount.toFixed(2)} EGP`);
-
       await updateDoc(promoRef, { usedCount: promo.usedCount + 1 });
     } catch (err) {
       console.error("Promo error:", err);
@@ -111,9 +132,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // -----------------------------
-  // Remove promo code
-  // -----------------------------
   const handleRemovePromo = () => {
     setPromoCode("");
     setPromoApplied(false);
@@ -127,7 +145,7 @@ export default function CheckoutPage() {
   const handleOrder = async () => {
     if (!user) return;
 
-    if (!fullName.trim() || !phone.trim() || (paymentMethod === "COD" && !address.trim())) {
+    if (!fullName.trim() || !phone.trim() || !building.trim() || !street.trim() || !city.trim() || !governorate.trim()) {
       toast.error("Please fill all required fields.");
       return;
     }
@@ -152,7 +170,7 @@ export default function CheckoutPage() {
         status: paymentMethod === "COD" ? "pending" : "waiting_for_payment",
         fullName,
         phone,
-        address: paymentMethod === "COD" ? address : null,
+        address: { building, street, city, governorate },
         promoCode: promoApplied ? promoCode.toUpperCase() : null,
         createdAt: serverTimestamp(),
       });
@@ -167,9 +185,6 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
-  // -----------------------------
-  // Render
-  // -----------------------------
   if (authLoading || !user || cart.length === 0) {
     return (
       <div className="p-10 text-center text-amber-700 text-xl">
@@ -180,12 +195,11 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      
-       <button
+      <button
         onClick={() => router.back()}
         className="mb-4 text-amber-700 font-semibold hover:underline"
-          >
-            ← Back
+      >
+        ← Back
       </button>
 
       <h1 className="text-3xl font-bold mb-6">Checkout</h1>
@@ -195,15 +209,25 @@ export default function CheckoutPage() {
         <h2 className="text-xl font-semibold mb-2">Customer Information</h2>
         <input type="text" placeholder="Full Name *" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full border rounded p-2 mb-2" />
         <input type="text" placeholder="Phone Number *" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        {paymentMethod === "COD" && (
-          <textarea placeholder="Address *" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        )}
+      </div>
+
+      {/* Address */}
+      <div className="mb-6 border p-4 rounded-lg">
+        <h2 className="text-xl font-semibold mb-2">Delivery Address</h2>
+        <input type="text" placeholder="Building Name / Number *" value={building} onChange={(e) => setBuilding(e.target.value)} className="w-full border rounded p-2 mb-2" />
+        <input type="text" placeholder="Street Name *" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full border rounded p-2 mb-2" />
+        <input type="text" placeholder="City *" value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded p-2 mb-2" />
+        <select value={governorate} onChange={(e) => setGovernorate(e.target.value)} className="w-full border rounded p-2 mb-2">
+          <option value="">Select Governorate *</option>
+          {governorates.map((gov) => (
+            <option key={gov} value={gov}>{gov}</option>
+          ))}
+        </select>
       </div>
 
       {/* Order Summary */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
-
         {cart.map((item) => (
           <div key={item.id} className="flex justify-between mb-2">
             <span>{item.title} x {item.quantity}</span>
@@ -211,7 +235,6 @@ export default function CheckoutPage() {
           </div>
         ))}
 
-        {/* Promo Code Section */}
         <div className="mt-4 flex gap-2 items-center">
           <input type="text" placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="border p-2 rounded flex-1" disabled={promoApplied} />
           {!promoApplied ? (
@@ -225,7 +248,6 @@ export default function CheckoutPage() {
           <p className="text-green-700 mt-1">Promo applied! Discount: {discount.toFixed(2)} EGP</p>
         )}
 
-        {/* Delivery Fee */}
         <p className="mt-2">Delivery Fee: {deliveryFee.toFixed(2)} EGP {qualifiesForFreeDelivery && "(Free Delivery!)"}</p>
 
         <div className="flex justify-between font-semibold mt-2">
