@@ -251,10 +251,10 @@ export default function CheckoutPage() {
     setLoading(false);
   };
   
-
   // ------------------------------------------------
   // Render
   // ------------------------------------------------
+  
   if (authLoading || !user || cart.length === 0)
     return (
       <div className="p-10 text-center text-amber-700 text-xl">
