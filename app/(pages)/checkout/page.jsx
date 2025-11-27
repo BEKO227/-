@@ -42,6 +42,7 @@ export default function CheckoutPage() {
 
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(0);
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   const governments = [
     "Cairo", "Alexandria", "Giza", "Qalyubia", "Dakahlia", "Sharqia",
@@ -145,11 +146,12 @@ export default function CheckoutPage() {
   // Protected route
   // ------------------------------------------------
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !placingOrder) {
       if (!user) router.push("/auth/signin");
       else if (cart.length === 0) router.push("/AllScarfs");
     }
-  }, [user, authLoading, cart.length, router]);
+  }, [user, authLoading, cart.length, router, placingOrder]);
+  
 
   // ------------------------------------------------
   // Promo code
@@ -217,7 +219,9 @@ export default function CheckoutPage() {
       return toast.error("Enter InstaPay reference number.");
     }
   
+    setPlacingOrder(true); // ✅ prevent redirect
     setLoading(true);
+  
     try {
       const docRef = await addDoc(collection(db, "orders"), {
         userId: user.uid,
@@ -238,17 +242,17 @@ export default function CheckoutPage() {
   
       await saveAddressToUser();
   
-      // Redirect BEFORE clearing cart
-      router.replace(`/checkout/confirmation/${docRef.id}`);
-  
-      clearCart(); // now clear the cart after redirect
-  
+      router.replace(`/checkout/confirmation/${docRef.id}`); // redirect first
+      clearCart(); // then clear cart
     } catch (err) {
       console.error(err);
       toast.error("Order failed");
     }
+  
     setLoading(false);
+    setPlacingOrder(false); // reset flag
   };
+  
   
   
   // ------------------------------------------------
