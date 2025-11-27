@@ -64,7 +64,7 @@ export default function TopSellers() {
             <MotionLink
               key={i}
               href={`/products/${item.id}`}
-              className="rounded-2xl overflow-hidden shadow-md group relative"
+              cla sName="rounded-2xl overflow-hidden shadow-md group relative"
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
