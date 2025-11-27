@@ -237,19 +237,19 @@ export default function CheckoutPage() {
       });
   
       await saveAddressToUser();
-      clearCart();
   
-      console.log("Order placed:", docRef.id);
-      // Delay to ensure cart clears
-      setTimeout(() => {
-        router.replace(`/checkout/confirmation/${docRef.id}`);
-      }, 50);
+      // Redirect BEFORE clearing cart
+      router.replace(`/checkout/confirmation/${docRef.id}`);
+  
+      clearCart(); // now clear the cart after redirect
+  
     } catch (err) {
       console.error(err);
       toast.error("Order failed");
     }
     setLoading(false);
   };
+  
   
   // ------------------------------------------------
   // Render
