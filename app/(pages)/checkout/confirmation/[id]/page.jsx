@@ -6,22 +6,42 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useAuth } from "../../../../AuthContext";
 
 export default function ConfirmationPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Redirect if not logged in
+    if (!authLoading && !user) {
+      router.push("/auth/signin");
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
     const fetchOrder = async () => {
+      if (!user) return;
+
       try {
         const docRef = doc(db, "orders", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setOrder({ id: docSnap.id, ...docSnap.data() });
+          const orderData = { id: docSnap.id, ...docSnap.data() };
+
+          // Check ownership
+          if (orderData.userId !== user.uid) {
+            toast.error("You are not authorized to view this order.");
+            router.push("/");
+            return;
+          }
+
+          setOrder(orderData);
         } else {
           toast.error("Order not found");
           setOrder(null);
@@ -35,10 +55,10 @@ export default function ConfirmationPage() {
       }
     };
 
-    if (id) fetchOrder();
-  }, [id]);
+    if (id && user) fetchOrder();
+  }, [id, user, router]);
 
-  if (loading) return <div className="p-10 text-center">Loading order...</div>;
+  if (authLoading || loading) return <div className="p-10 text-center">Loading...</div>;
   if (!order) return <div className="p-10 text-center text-red-600">Order not found</div>;
 
   return (
