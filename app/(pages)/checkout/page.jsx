@@ -19,63 +19,102 @@ import {
 } from "firebase/firestore";
 import toast from "react-hot-toast";
 
-// List of Egyptian governorates
-const governorates = [
-  "Cairo","Alexandria","Giza","Aswan","Asyut","Beheira","Beni Suef","Dakahlia",
-  "Damietta","Faiyum","Gharbia","Ismailia","Kafr El Sheikh","Luxor","Matruh",
-  "Minya","Monufia","New Valley","North Sinai","Port Said","Qalyubia","Qena",
-  "Red Sea","Sharqia","Sohag","South Sinai","Suez"
-];
-
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // -------------------------
-  // Form states
-  // -------------------------
-  const [paymentMethod, setPaymentMethod] = useState("COD");
-  const [instaRef, setInstaRef] = useState("");
+  // -----------------------------
+  // User info
+  // -----------------------------
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
 
+  // -----------------------------
+  // Address steps
+  // -----------------------------
   const [building, setBuilding] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
-  const [governorate, setGovernorate] = useState("");
+  const [government, setGovernment] = useState("");
 
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [instaRef, setInstaRef] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Promo
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
+
+  // Delivery
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(0);
 
-  // -------------------------
-  // Pre-fill user info
-  // -------------------------
+  // Egyptian Governments
+  const governments = [
+    "Cairo", "Alexandria", "Giza", "Qalyubia", "Dakahlia", "Sharqia",
+    "Gharbia", "Beheira", "Fayoum", "Menoufia", "Minya", "Asyut",
+    "Sohag", "Qena", "Luxor", "Aswan", "Red Sea", "New Valley",
+    "Beni Suef", "Ismailia", "Suez", "Port Said", "Damietta", "North Sinai",
+    "South Sinai", "Matrouh"
+  ];
+
+  // -----------------------------
+  // Prefill user data from Firestore
+  // -----------------------------
   useEffect(() => {
     if (user) {
-      setFullName(user.displayName || "");
-      setPhone(user.phoneNumber || "");
+      const fetchUserData = async () => {
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setFullName(data.name || "");
+            setPhone(data.phone || "");
+            if (data.location) {
+              const parts = data.location.split(" - "); // "Building - Street - City - Gov"
+              setBuilding(parts[0] || "");
+              setStreet(parts[1] || "");
+              setCity(parts[2] || "");
+              setGovernment(parts[3] || "");
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch user data:", err);
+        }
+      };
+      fetchUserData();
     }
   }, [user]);
 
-  // -------------------------
+  // -----------------------------
+  // Auto-save address to Firestore
+  // -----------------------------
+  const saveAddressToUser = async () => {
+    if (!user) return;
+    try {
+      const location = `${building} - ${street} - ${city} - ${government}`;
+      await updateDoc(doc(db, "users", user.uid), { location });
+    } catch (err) {
+      console.error("Failed to update user location:", err);
+    }
+  };
+
+  // -----------------------------
   // Free delivery threshold listener
-  // -------------------------
+  // -----------------------------
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "Sale", "freeDelivery"), (snap) => {
-      if (snap.exists()) {
-        setFreeDeliveryThreshold(snap.data().Price || 0);
-      }
+      if (snap.exists()) setFreeDeliveryThreshold(snap.data().Price || 0);
     });
     return () => unsub();
   }, []);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const qualifiesForFreeDelivery = cartTotal >= freeDeliveryThreshold;
-  const deliveryFee = qualifiesForFreeDelivery ? 0 : 50; 
+  const deliveryFee = qualifiesForFreeDelivery ? 0 : 50;
   const total = Math.max(cartTotal - discount + deliveryFee, 0);
 
   // -----------------------------
@@ -107,10 +146,11 @@ export default function CheckoutPage() {
     try {
       const promoRef = doc(db, "promocodes", code);
       const promoSnap = await getDoc(promoRef);
-      if (!promoSnap.exists()) return toast.error("Invalid promo code");
 
+      if (!promoSnap.exists()) return toast.error("Invalid promo code");
       const promo = promoSnap.data();
       const now = new Date();
+
       if (!promo.active) return toast.error("Promo code disabled");
       if (promo.expiresAt.toDate() < now) return toast.error("Promo code expired");
       if (promo.firstOrderOnly && await userHasPreviousOrders())
@@ -125,6 +165,7 @@ export default function CheckoutPage() {
       setDiscount(newDiscount);
       setPromoApplied(true);
       toast.success(`Promo applied! Saved ${newDiscount.toFixed(2)} EGP`);
+
       await updateDoc(promoRef, { usedCount: promo.usedCount + 1 });
     } catch (err) {
       console.error("Promo error:", err);
@@ -143,16 +184,11 @@ export default function CheckoutPage() {
   // Place order
   // -----------------------------
   const handleOrder = async () => {
-    if (!user) return;
-
-    if (!fullName.trim() || !phone.trim() || !building.trim() || !street.trim() || !city.trim() || !governorate.trim()) {
-      toast.error("Please fill all required fields.");
-      return;
+    if (!fullName.trim() || !phone.trim() || !building.trim() || !street.trim() || !city.trim() || !government.trim()) {
+      return toast.error("Please fill all required fields.");
     }
-
     if (paymentMethod === "InstaPay" && !instaRef.trim()) {
-      toast.error("Please provide your InstaPay reference number.");
-      return;
+      return toast.error("Please provide your InstaPay reference number.");
     }
 
     setLoading(true);
@@ -170,10 +206,13 @@ export default function CheckoutPage() {
         status: paymentMethod === "COD" ? "pending" : "waiting_for_payment",
         fullName,
         phone,
-        address: { building, street, city, governorate },
+        address: `${building} - ${street} - ${city} - ${government}`,
         promoCode: promoApplied ? promoCode.toUpperCase() : null,
         createdAt: serverTimestamp(),
       });
+
+      // Save latest address to Firestore
+      await saveAddressToUser();
 
       clearCart();
       router.push(`/checkout/confirmation/${docRef.id}`);
@@ -185,6 +224,9 @@ export default function CheckoutPage() {
     setLoading(false);
   };
 
+  // -----------------------------
+  // Render
+  // -----------------------------
   if (authLoading || !user || cart.length === 0) {
     return (
       <div className="p-10 text-center text-amber-700 text-xl">
@@ -207,19 +249,59 @@ export default function CheckoutPage() {
       {/* Customer Info */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Customer Information</h2>
-        <input type="text" placeholder="Full Name *" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        <input type="text" placeholder="Phone Number *" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded p-2 mb-2" />
+        <input
+          type="text"
+          placeholder="Full Name *"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          className="w-full border rounded p-2 mb-2"
+          onBlur={saveAddressToUser}
+        />
+        <input
+          type="text"
+          placeholder="Phone Number *"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full border rounded p-2 mb-2"
+          onBlur={saveAddressToUser}
+        />
       </div>
 
-      {/* Address */}
+      {/* Address Steps */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Delivery Address</h2>
-        <input type="text" placeholder="Building Name / Number *" value={building} onChange={(e) => setBuilding(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        <input type="text" placeholder="Street Name *" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        <input type="text" placeholder="City *" value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        <select value={governorate} onChange={(e) => setGovernorate(e.target.value)} className="w-full border rounded p-2 mb-2">
-          <option value="">Select Governorate *</option>
-          {governorates.map((gov) => (
+        <input
+          type="text"
+          placeholder="Building Name / Number *"
+          value={building}
+          onChange={(e) => setBuilding(e.target.value)}
+          className="w-full border rounded p-2 mb-2"
+          onBlur={saveAddressToUser}
+        />
+        <input
+          type="text"
+          placeholder="Street Name *"
+          value={street}
+          onChange={(e) => setStreet(e.target.value)}
+          className="w-full border rounded p-2 mb-2"
+          onBlur={saveAddressToUser}
+        />
+        <input
+          type="text"
+          placeholder="City *"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="w-full border rounded p-2 mb-2"
+          onBlur={saveAddressToUser}
+        />
+        <select
+          value={government}
+          onChange={(e) => setGovernment(e.target.value)}
+          className="w-full border rounded p-2 mb-2"
+          onBlur={saveAddressToUser}
+        >
+          <option value="">Select Government *</option>
+          {governments.map((gov) => (
             <option key={gov} value={gov}>{gov}</option>
           ))}
         </select>
@@ -234,22 +316,24 @@ export default function CheckoutPage() {
             <span>{(item.price * item.quantity).toFixed(2)} EGP</span>
           </div>
         ))}
-
+        {/* Promo Code */}
         <div className="mt-4 flex gap-2 items-center">
-          <input type="text" placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="border p-2 rounded flex-1" disabled={promoApplied} />
+          <input
+            type="text"
+            placeholder="Promo code"
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            className="border p-2 rounded flex-1"
+            disabled={promoApplied}
+          />
           {!promoApplied ? (
             <button onClick={handleApplyPromo} className="bg-amber-700 text-white px-4 py-2 rounded">Apply</button>
           ) : (
             <button onClick={handleRemovePromo} className="bg-red-600 text-white px-4 py-2 rounded">Remove</button>
           )}
         </div>
-
-        {promoApplied && (
-          <p className="text-green-700 mt-1">Promo applied! Discount: {discount.toFixed(2)} EGP</p>
-        )}
-
+        {promoApplied && <p className="text-green-700 mt-1">Promo applied! Discount: {discount.toFixed(2)} EGP</p>}
         <p className="mt-2">Delivery Fee: {deliveryFee.toFixed(2)} EGP {qualifiesForFreeDelivery && "(Free Delivery!)"}</p>
-
         <div className="flex justify-between font-semibold mt-2">
           <span>Total:</span>
           <span>{total.toFixed(2)} EGP</span>
