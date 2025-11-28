@@ -43,7 +43,7 @@ export default function Navbar() {
         {/* LOGO LEFT */}
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/Logo.png"
+            src="/logo.png"
             width={40}
             height={40}
             alt="Logo"
