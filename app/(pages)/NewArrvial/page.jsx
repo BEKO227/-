@@ -42,7 +42,15 @@ export default function NewArrivalPage() {
       <div className="w-full bg-[#fdfaf7] py-2 shadow-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <Link href="/" className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors">🏚️</Link>
-          <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
+          <div className="text-2xl font-bold text-amber-700"
+          style={{
+            fontFamily: "'Diwani Letter', sans-serif",
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+          }}
+          >
+            قَمَرْ
+            </div>
         </div>
       </div>
 

@@ -54,7 +54,13 @@ export default function AllScarfsPage() {
             🏚️
           </Link>
 
-          <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
+          <div className="text-2xl font-bold text-amber-700" style={{
+              fontFamily: "'Diwani Letter', sans-serif",
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+            }}>
+              قَمَرْ
+              </div>
         </div>
       </div>
 

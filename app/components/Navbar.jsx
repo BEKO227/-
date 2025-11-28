@@ -43,13 +43,13 @@ export default function Navbar() {
         {/* LOGO LEFT */}
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/logo.png"
+            src="/Logo.png"
             width={40}
             height={40}
             alt="Logo"
             className="object-contain"
           />
-          <span className="text-xl font-semibold tracking-wide">
+          <span className="text-xl font-semibold tracking-wide text-amber-700">
             Qamar Scarves
           </span>
         </Link>
