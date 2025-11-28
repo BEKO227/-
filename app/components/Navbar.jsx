@@ -1,271 +1,161 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { Menu } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { Menu, X, ShoppingBag, User, LogOut } from "lucide-react";
 import { useAuth } from "../AuthContext";
 import { useCart } from "../CartContext";
-import { FaShoppingCart } from "react-icons/fa";
-import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [userName, setUserName] = useState("");
+
   const { user, logout } = useAuth();
   const { cart } = useCart();
-  const [cartOpen, setCartOpen] = useState(false);
-  const [name, setName] = useState("");
 
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  const links = [
-    { label: "NEW ARRIVALS", href: "/NewArrvial" },
-    { label: "TOP SELLERS", href: "/topsellers" },
-    { label: "ALL SCARFS", href: "/AllScarfs" },
-    { label: "CONTACT US", href: "#footer" },
-  ];
+  const totalCartItems = cart?.length || 0;
 
   // Fetch user name from Firestore
   useEffect(() => {
-    const fetchUserName = async () => {
-      if (!user) return;
+    const fetchName = async () => {
+      if (!user?.uid) return;
       try {
-        const docSnap = await getDoc(doc(db, "users", user.uid));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setName(data.name || "Guest");
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          setUserName(snap.data().name || "");
         }
-      } catch (err) {
-        console.error("Failed to fetch user name:", err);
-        setName("Guest");
+      } catch (error) {
+        console.log("Error fetching user name:", error);
       }
     };
 
-    fetchUserName();
+    fetchName();
   }, [user]);
 
   return (
-    <nav className="bg-white shadow-md px-6 py-4 relative">
-      {/* Desktop Navbar */}
-      <div className="hidden md:flex items-center justify-between">
-        {/* Left links */}
-        <NavigationMenu>
-          <NavigationMenuList className="flex space-x-4">
-            {links.map((link) => (
-              <NavigationMenuItem key={link.label}>
-                <NavigationMenuLink
-                  href={link.href}
-                  className={navigationMenuTriggerStyle()}
-                >
-                  {link.label}
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-
-        {/* Logo */}
-        <div className="rounded-full absolute left-1/2 transform -translate-x-1/2">
+    <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        
+        {/* LOGO LEFT */}
+        <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/logo.png"
-            alt="قَمَرْ Logo"
-            width={80}
-            height={80}
-            className="object-contain rounded-full"
-          />
-        </div>
-
-        {/* Right side */}
-        <div className="flex items-center gap-4 relative">
-  {user ? (
-    <>
-      <Link href="/user">
-        <span
-          style={{
-            fontFamily: "'Diwani Letter', sans-serif",
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            color: "#b45309",
-            cursor: "pointer",
-          }}
-        >
-          Welcome, {name}!
-        </span>
-      </Link>
-
-      {/* Cart Button */}
-      <div className="relative">
-        <button
-          onClick={() => setCartOpen(!cartOpen)}
-          className="relative text-amber-700 hover:text-amber-800"
-        >
-          <FaShoppingCart size={24} />
-          {cartItemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-              {cartItemCount}
-            </span>
-          )}
-        </button>
-
-        {/* Cart Dropdown */}
-        {cartOpen && cart.length > 0 && (
-          <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded p-4 z-50">
-            {cart.slice(0, 3).map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between mb-2 border-b pb-1"
-              >
-                <span>{item.title}</span>
-                <span>{item.quantity} x {item.price} EGP</span>
-              </div>
-            ))}
-            {cart.length > 3 && (
-              <p className="text-sm text-gray-500">And more...</p>
-            )}
-            <Link
-              href="/Cart"
-              className="block mt-2 text-center bg-amber-700 text-white py-2 rounded hover:bg-amber-800"
-              onClick={() => setCartOpen(false)}
-            >
-              View Cart
-            </Link>
-          </div>
-        )}
-      </div>
-
-      <button
-        onClick={logout}
-        className="px-4 py-2 bg-amber-700 text-white rounded-full hover:bg-amber-800 transition-colors"
-      >
-        Logout
-      </button>
-    </>
-  ) : (
-    <Link href="/auth/signin">
-      <button className="px-4 py-2 bg-amber-700 text-white rounded-full hover:bg-amber-800 transition-colors">
-        Log In
-      </button>
-    </Link>
-  )}
-</div>
-
-      </div>
-
-      {/* Mobile Navbar */}
-      <div className="flex justify-between items-center md:hidden">
-        <Button
-          variant="outline"
-          className="text-amber-700 border-amber-700"
-          onClick={() => setOpen(!open)}
-        >
-          <Menu size={20} />
-        </Button>
-
-        <div className="absolute left-1/2 transform -translate-x-1/2">
-          <Image
-            src="/logo.png"
-            alt="قَمَرْ Logo"
+            src="/Logo.png"
             width={40}
             height={40}
+            alt="Logo"
             className="object-contain"
           />
+          <span className="text-xl font-semibold tracking-wide">
+            Qamar Scarves
+          </span>
+        </Link>
+
+        {/* CENTER LINKS */}
+        <div className="hidden md:flex gap-8 text-sm font-medium">
+          <Link href="/" className="hover:text-gray-700 transition">Home</Link>
+          <Link href="/NewArrvial" className="hover:text-gray-700 transition">New Arrival</Link>
+          <Link href="/topsellers" className="hover:text-gray-700 transition">Top Sellers</Link>
+          <Link href="/AllScarfs" className="hover:text-gray-700 transition">All Scarfs</Link>
+          <Link href="#footer" className="hover:text-gray-700 transition">Contact</Link>
         </div>
 
-        <div className="flex items-center gap-2">
-  {user ? (
-    <>
-      <Link href="/user">
-        <span
-          style={{
-            fontFamily: "'Diwani Letter', sans-serif",
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            color: "#b45309",
-            cursor: "pointer",
-          }}
-        >
-          Welcome, {name}!
-        </span>
-      </Link>
+        {/* RIGHT SIDE ITEMS */}
+        <div className="flex items-center gap-4">
 
-      {/* Cart Button */}
-      <div className="relative">
-        <button
-          onClick={() => setCartOpen(!cartOpen)}
-          className="relative text-amber-700 hover:text-amber-800"
-        >
-          <FaShoppingCart size={20} />
-          {cartItemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-              {cartItemCount}
-            </span>
-          )}
-        </button>
-
-        {/* Cart Dropdown */}
-        {cartOpen && cart.length > 0 && (
-          <div className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded p-4 z-50">
-            {cart.slice(0, 3).map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between mb-2 border-b pb-1"
-              >
-                <span>{item.title}</span>
-                <span>{item.quantity} x {item.price} EGP</span>
-              </div>
-            ))}
-            {cart.length > 3 && <p className="text-sm text-gray-500">And more...</p>}
-            <Link
-              href="/Cart"
-              className="block mt-2 text-center bg-amber-700 text-white py-2 rounded hover:bg-amber-800"
-              onClick={() => setCartOpen(false)}
+          {/* Clickable Username (Profile Page) */}
+          {user && (
+            <Link 
+              href="/user"
+              className="hidden md:block text-sm text-gray-700 hover:text-black"
             >
-              View Cart
+              Welcome, <span className="font-semibold underline">{userName}</span>
             </Link>
-          </div>
-        )}
-      </div>
+          )}
 
-      <button
-        onClick={logout}
-        className="px-4 py-2 bg-amber-700 text-white rounded-full hover:bg-amber-800 transition-colors"
-      >
-        Logout
-      </button>
-    </>
-  ) : (
-    <Link href="/auth/signin">
-      <button className="px-4 py-2 bg-amber-700 text-white rounded-full hover:bg-amber-800 transition-colors">
-        Log In
-      </button>
-    </Link>
-  )}
-</div>
+          {/* CART ICON (hidden if NOT logged in) */}
+          {user && (
+            <Link href="/Cart" className="relative">
+              <ShoppingBag className="w-6 h-6 hover:text-gray-700 cursor-pointer" />
+              {totalCartItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {totalCartItems}
+                </span>
+              )}
+            </Link>
+          )}
 
-      </div>
-
-      {/* Mobile Menu Drawer */}
-      {open && (
-        <div className="absolute top-full left-0 w-full bg-white shadow-md flex flex-col items-center py-4 space-y-4 md:hidden z-50">
-          {links.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-amber-700 font-medium text-lg hover:text-amber-800"
-              onClick={() => setOpen(false)}
+          {/* LOGIN / LOGOUT BUTTON */}
+          {user ? (
+            <button
+              onClick={logout}
+              className="flex items-center gap-1 text-sm text-gray-700 hover:text-black"
             >
-              {link.label}
-            </a>
-          ))}
+              <LogOut className="w-5 h-5" />
+            </button>
+          ) : (
+            <Link href="/auth/signin" className="flex items-center gap-1 text-sm">
+              <User className="w-6 h-6 hover:text-gray-700 cursor-pointer" />
+              Login
+            </Link>
+          )}
+
+          {/* MOBILE TOGGLE */}
+          <button className="md:hidden" onClick={() => setOpen(!open)}>
+            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </div>
+
+      {/* MOBILE MENU */}
+      {open && (
+        <div className="md:hidden bg-white border-t shadow-sm">
+          <div className="flex flex-col px-6 py-4 gap-4 text-sm font-medium">
+
+            {/* MOBILE USERNAME */}
+            {user && (
+              <Link 
+                href="/user"
+                onClick={() => setOpen(false)}
+                className="text-gray-700 mb-2 underline"
+              >
+                Welcome, <span className="font-semibold">{userName}</span>
+              </Link>
+            )}
+
+            <Link href="/" onClick={() => setOpen(false)}>Home</Link>
+            <Link href="/NewArrvial" onClick={() => setOpen(false)}>New Arrival</Link>
+            <Link href="/topsellers" onClick={() => setOpen(false)}>Top Sellers</Link>
+            <Link href="/AllScarfs" onClick={() => setOpen(false)}>All Scarfs</Link>
+            <Link href="#footer" onClick={() => setOpen(false)}>Contact</Link>
+
+            {/* MOBILE CART */}
+            {user && (
+              <Link href="/Cart" onClick={() => setOpen(false)}>
+                Cart ({totalCartItems})
+              </Link>
+            )}
+
+            {/* MOBILE LOGIN / LOGOUT */}
+            {user ? (
+              <button
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                className="text-left text-red-600"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link href="/auth/signin" onClick={() => setOpen(false)}>
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       )}
     </nav>
