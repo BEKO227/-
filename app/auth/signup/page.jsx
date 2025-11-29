@@ -9,7 +9,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react"; // Install lucide-react if not installed
+import { Eye, EyeOff } from "lucide-react";
 
 const signupSchema = z.object({
   name: z.string().min(2),
@@ -54,13 +54,18 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const uid = userCredential.user.uid;
 
-      // Store extra info in Firestore
+      // Store extra info in Firestore with default values
       await setDoc(doc(db, "users", uid), {
         name: data.name,
         email: data.email,
         phone: data.phone,
         age: data.age,
         gender: data.gender,
+        location: "", // default empty
+        avgSpent: 0,
+        productsBoughtCount: 0,
+        couponsUsedCount: 0,
+        purchasesWithoutSale: 0,
         createdAt: new Date().toISOString(),
       });
 

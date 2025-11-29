@@ -26,12 +26,10 @@ export default function CheckoutPage() {
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-
   const [building, setBuilding] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [government, setGovernment] = useState("");
-
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [instaRef, setInstaRef] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +51,7 @@ export default function CheckoutPage() {
   ];
 
   // ------------------------------------------------
-  // 1) Prefill user data
+  // Prefill user data
   // ------------------------------------------------
   useEffect(() => {
     if (user) {
@@ -72,6 +70,7 @@ export default function CheckoutPage() {
               setBuilding(parts[0] || "");
               setStreet(parts[1] || "");
               setCity(parts[2] || "");
+              setGovernment(parts[3] || "");
             }
           }
         } catch (err) {
@@ -84,11 +83,10 @@ export default function CheckoutPage() {
   }, [user]);
 
   // ------------------------------------------------
-  // 2) Auto-save address
+  // Auto-save address
   // ------------------------------------------------
   const saveAddressToUser = async () => {
     if (!user) return;
-
     try {
       const location = `${building} - ${street} - ${city} - ${government}`;
       await updateDoc(doc(db, "users", user.uid), { location });
@@ -98,44 +96,32 @@ export default function CheckoutPage() {
   };
 
   // ------------------------------------------------
-  // 3) Free delivery threshold
+  // Free delivery threshold
   // ------------------------------------------------
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "Sale", "freeDelivery"), (snap) => {
       if (snap.exists()) setFreeDeliveryThreshold(snap.data().Price || 0);
     });
-
     return () => unsub();
   }, []);
 
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
+  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const qualifiesForFreeDelivery = cartTotal >= freeDeliveryThreshold;
 
   // ------------------------------------------------
-  // ⭐ 4) Delivery fee based on government (NEW)
+  // Delivery fee
   // ------------------------------------------------
   useEffect(() => {
     const fetchDeliveryFee = async () => {
       if (!government) return;
-
       try {
         const feeRef = doc(db, "deliveryFees", government);
         const feeSnap = await getDoc(feeRef);
-
-        if (feeSnap.exists()) {
-          setDeliveryFee(feeSnap.data().fee || 0);
-        } else {
-          setDeliveryFee(60); // fallback default
-        }
+        setDeliveryFee(feeSnap.exists() ? feeSnap.data().fee || 0 : 60);
       } catch (err) {
         console.error("Error loading delivery fee:", err);
       }
     };
-
     fetchDeliveryFee();
   }, [government]);
 
@@ -146,11 +132,8 @@ export default function CheckoutPage() {
   // Protected route
   // ------------------------------------------------
   useEffect(() => {
-    if (!authLoading && !placingOrder) {
-      if (!user) router.push("/auth/signin");
-    }
-  }, [user, authLoading, cart.length, router, placingOrder]);
-  
+    if (!authLoading && !placingOrder && !user) router.push("/auth/signin");
+  }, [user, authLoading, placingOrder, router]);
 
   // ------------------------------------------------
   // Promo code
@@ -163,9 +146,7 @@ export default function CheckoutPage() {
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return toast.error("Enter promo code");
-
     const code = promoCode.toUpperCase();
-
     try {
       const promoRef = doc(db, "promocodes", code);
       const promoSnap = await getDoc(promoRef);
@@ -173,7 +154,6 @@ export default function CheckoutPage() {
 
       const promo = promoSnap.data();
       const now = new Date();
-
       if (!promo.active) return toast.error("Promo disabled");
       if (promo.expiresAt.toDate() < now) return toast.error("Expired promo");
       if (promo.firstOrderOnly && (await userHasPreviousOrders()))
@@ -182,21 +162,15 @@ export default function CheckoutPage() {
         return toast.error("Promo usage limit reached");
 
       let newDiscount = 0;
-
-      if (promo.discountType === "percentage")
-        newDiscount = (cartTotal * promo.discountValue) / 100;
-      else if (promo.discountType === "fixed")
-        newDiscount = promo.discountValue;
-
+      if (promo.discountType === "percentage") newDiscount = (cartTotal * promo.discountValue) / 100;
+      else if (promo.discountType === "fixed") newDiscount = promo.discountValue;
       newDiscount = Math.min(newDiscount, promo.maxDiscount);
 
       setDiscount(newDiscount);
       setPromoApplied(true);
-
       await updateDoc(promoRef, { usedCount: promo.usedCount + 1 });
-
       toast.success(`Saved ${newDiscount.toFixed(2)} EGP`);
-    } catch (err) {
+    } catch {
       toast.error("Failed to apply promo");
     }
   };
@@ -208,21 +182,56 @@ export default function CheckoutPage() {
   };
 
   // ------------------------------------------------
+  // Update user stats
+  // ------------------------------------------------
+  const updateUserStats = async (order) => {
+    if (!user) return;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) return;
+
+      const data = userSnap.data();
+
+      const productsBoughtCount = (data.productsBoughtCount || 0) +
+        order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+      const avgSpent =
+        ((data.avgSpent || 0) * (data.productsBoughtCount || 0) + order.total) /
+        (productsBoughtCount || 1);
+
+      const purchasesWithoutSale =
+        (data.purchasesWithoutSale || 0) + (order.discount === 0 ? 1 : 0);
+
+      const couponsUsedCount =
+        (data.couponsUsedCount || 0) + (order.promoCode ? 1 : 0);
+
+      await updateDoc(userRef, {
+        productsBoughtCount,
+        avgSpent,
+        purchasesWithoutSale,
+        couponsUsedCount,
+      });
+    } catch (err) {
+      console.error("Failed to update user stats:", err);
+    }
+  };
+
+  // ------------------------------------------------
   // Place order
   // ------------------------------------------------
   const handleOrder = async () => {
-    if (!fullName || !phone || !building || !street || !city || !government) {
+    if (!fullName || !phone || !building || !street || !city || !government)
       return toast.error("Fill all required fields.");
-    }
-    if (paymentMethod === "InstaPay" && !instaRef) {
+    if (paymentMethod === "InstaPay" && !instaRef)
       return toast.error("Enter InstaPay reference number.");
-    }
-  
-    setPlacingOrder(true); // ✅ prevent redirect
+
+    setPlacingOrder(true);
     setLoading(true);
-  
+
     try {
-      const docRef = await addDoc(collection(db, "orders"), {
+      const orderData = {
         userId: user.uid,
         items: cart,
         subtotal: cartTotal,
@@ -237,27 +246,27 @@ export default function CheckoutPage() {
         address: `${building} - ${street} - ${city} - ${government}`,
         promoCode: promoApplied ? promoCode.toUpperCase() : null,
         createdAt: serverTimestamp(),
-      });
-  
+      };
+
+      const docRef = await addDoc(collection(db, "orders"), orderData);
+
       await saveAddressToUser();
-  
-      router.replace(`/checkout/confirmation/${docRef.id}`); // redirect first
-      clearCart(); // then clear cart
+      await updateUserStats(orderData); // ✅ update stats here
+
+      router.replace(`/checkout/confirmation/${docRef.id}`);
+      clearCart();
     } catch (err) {
       console.error(err);
       toast.error("Order failed");
     }
-  
+
     setLoading(false);
-    setPlacingOrder(false); // reset flag
+    setPlacingOrder(false);
   };
-  
-  
-  
+
   // ------------------------------------------------
   // Render
   // ------------------------------------------------
-  
   if (authLoading || !user || cart.length === 0)
     return (
       <div className="p-10 text-center text-amber-700 text-xl">
@@ -279,119 +288,41 @@ export default function CheckoutPage() {
       {/* CUSTOMER INFO */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Customer Information</h2>
-
-        <input
-          type="text"
-          placeholder="Full Name *"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          className="w-full border rounded p-2 mb-2"
-        />
-
-        <input
-          type="text"
-          placeholder="Phone Number *"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full border rounded p-2 mb-2"
-        />
+        <input type="text" placeholder="Full Name *" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <input type="text" placeholder="Phone Number *" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded p-2 mb-2"/>
       </div>
 
       {/* ADDRESS */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Delivery Address</h2>
-
-        <input
-          type="text"
-          placeholder="Building Name / Number *"
-          value={building}
-          onChange={(e) => setBuilding(e.target.value)}
-          className="w-full border rounded p-2 mb-2"
-        />
-
-        <input
-          type="text"
-          placeholder="Street Name *"
-          value={street}
-          onChange={(e) => setStreet(e.target.value)}
-          className="w-full border rounded p-2 mb-2"
-        />
-
-        <input
-          type="text"
-          placeholder="City *"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          className="w-full border rounded p-2 mb-2"
-        />
-
-        <select
-          value={government}
-          onChange={(e) => setGovernment(e.target.value)}
-          className="w-full border rounded p-2 mb-2"
-        >
+        <input type="text" placeholder="Building Name / Number *" value={building} onChange={(e) => setBuilding(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <input type="text" placeholder="Street Name *" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <input type="text" placeholder="City *" value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <select value={government} onChange={(e) => setGovernment(e.target.value)} className="w-full border rounded p-2 mb-2">
           <option value="">Select Government *</option>
-          {governments.map((gov) => (
-            <option key={gov} value={gov}>
-              {gov}
-            </option>
-          ))}
+          {governments.map((gov) => <option key={gov} value={gov}>{gov}</option>)}
         </select>
       </div>
 
       {/* ORDER SUMMARY */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
-
         {cart.map((item) => (
           <div key={item.id} className="flex justify-between mb-2">
-            <span>
-              {item.title} × {item.quantity}
-            </span>
-            <span>
-              {(item.price * item.quantity).toFixed(2)} EGP
-            </span>
+            <span>{item.title} × {item.quantity}</span>
+            <span>{(item.price * item.quantity).toFixed(2)} EGP</span>
           </div>
         ))}
-
         <div className="mt-4 flex gap-2 items-center">
-          <input
-            type="text"
-            placeholder="Promo code"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            className="border p-2 rounded flex-1"
-            disabled={promoApplied}
-          />
-
+          <input type="text" placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="border p-2 rounded flex-1" disabled={promoApplied}/>
           {!promoApplied ? (
-            <button
-              onClick={handleApplyPromo}
-              className="bg-amber-700 text-white px-4 py-2 rounded"
-            >
-              Apply
-            </button>
+            <button onClick={handleApplyPromo} className="bg-amber-700 text-white px-4 py-2 rounded">Apply</button>
           ) : (
-            <button
-              onClick={handleRemovePromo}
-              className="bg-red-600 text-white px-4 py-2 rounded"
-            >
-              Remove
-            </button>
+            <button onClick={handleRemovePromo} className="bg-red-600 text-white px-4 py-2 rounded">Remove</button>
           )}
         </div>
-
-        {promoApplied && (
-          <p className="text-green-700 mt-1">
-            Discount: {discount.toFixed(2)} EGP
-          </p>
-        )}
-
-        <p className="mt-2">
-          Delivery Fee: {finalDeliveryFee.toFixed(2)} EGP{" "}
-          {qualifiesForFreeDelivery && "(Free Delivery!)"}
-        </p>
-
+        {promoApplied && <p className="text-green-700 mt-1">Discount: {discount.toFixed(2)} EGP</p>}
+        <p className="mt-2">Delivery Fee: {finalDeliveryFee.toFixed(2)} EGP {qualifiesForFreeDelivery && "(Free Delivery!)"}</p>
         <div className="flex justify-between font-semibold mt-2">
           <span>Total:</span>
           <span>{total.toFixed(2)} EGP</span>
@@ -401,97 +332,26 @@ export default function CheckoutPage() {
       {/* PAYMENT */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Payment Method</h2>
-
         <div className="flex gap-4">
           <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="payment"
-              value="COD"
-              checked={paymentMethod === "COD"}
-              onChange={() => setPaymentMethod("COD")}
-            />
+            <input type="radio" name="payment" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")}/>
             Cash on Delivery
           </label>
-
           <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="payment"
-              value="InstaPay"
-              checked={paymentMethod === "InstaPay"}
-              onChange={() => setPaymentMethod("InstaPay")}
-            />
+            <input type="radio" name="payment" value="InstaPay" checked={paymentMethod === "InstaPay"} onChange={() => setPaymentMethod("InstaPay")}/>
             InstaPay
           </label>
         </div>
         {paymentMethod === "InstaPay" && (
           <div className="mt-4 p-4 bg-yellow-50 border rounded-lg">
-            <p className="mb-2">
-              Please pay to:<br />
-              Phone: +20 102 715 7089<br />
-              Bank Account: 123-456-789-1011
-            </p>
-
-            <p className="mb-2">
-              Steps:<br />
-              1. Include your username in the transaction notes.<br />
-              2. Complete the payment.<br />
-              3. Send screenshot on WhatsApp.<br />
-              4. Enter the reference number.
-            </p>
-
-            <input
-              type="text"
-              placeholder="Reference Number *"
-              value={instaRef}
-              onChange={(e) => setInstaRef(e.target.value)}
-              className="w-full border rounded p-2"
-            />
-
-            {/* WhatsApp Icon */}
-            <a
-              href="https://wa.me/201027157089?text=Hello!%20I%20paid%20via%20InstaPay%20and%20want%20to%20confirm%20my%20order."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-block"
-            >
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 48 48"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="24" cy="24" r="24" fill="#25D366" />
-            <svg
-              x="14"
-              y="14"
-              width="20"
-              height="20"
-              viewBox="0 0 19 19"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M15.255 3.713a8 8 0 0 0-5.684-2.36c-4.433 0-8.043 3.603-8.043 8.036 0 1.394.364 2.771 1.045 3.974l-1.164 4.26 4.354-1.14a8.06 8.06 0 0 0 3.8.957c4.434 0 8.044-3.61 8.044-8.043 0-2.145-.84-4.172-2.352-5.692zM4.283 13.11c-.76-.863-1.18-2.312-1.18-3.72a6.467 6.467 0 0 1 6.46-6.46 6.42 6.42 0 0 1 4.568 1.891 6.42 6.42 0 0 1 1.892 4.568 6.467 6.467 0 0 1-6.46 6.46c-1.258 0-2.596-.404-3.562-1.06l-2.343.609z"
-                fill="#fff"
-              />
-              <path
-                d="M11.748 10.434c.182.064 1.148.539 1.346.641.198.103.333.15.38.23.048.08.048.475-.119.934s-.95.879-1.33.934c-.34.048-.768.072-1.242-.079a12 12 0 0 1-1.125-.412c-1.979-.854-3.27-2.842-3.364-2.976-.103-.143-.8-1.069-.8-2.035s.507-1.448.689-1.646a.72.72 0 0 1 .522-.246h.38c.12 0 .285-.047.444.34.166.396.562 1.362.61 1.465a.38.38 0 0 1 .015.349c-.063.134-.095.213-.198.324a8 8 0 0 1-.293.348c-.095.095-.198.206-.087.404.119.198.507.84 1.093 1.362.752.673 1.385.879 1.583.974s.309.079.428-.048c.118-.135.49-.578.625-.776s.261-.166.443-.095z"
-                fill="#fff"
-              />
-            </svg>
-          </svg>
-
-            </a>
+            <p className="mb-2">Please pay to:<br/>Phone: +20 102 715 7089<br/>Bank Account: 123-456-789-1011</p>
+            <p className="mb-2">Steps:<br/>1. Include your username in the transaction notes.<br/>2. Complete the payment.<br/>3. Send screenshot on WhatsApp.<br/>4. Enter the reference number.</p>
+            <input type="text" placeholder="Reference Number *" value={instaRef} onChange={(e) => setInstaRef(e.target.value)} className="w-full border rounded p-2"/>
           </div>
         )}
-        </div>
+      </div>
 
-      <button
-        onClick={handleOrder}
-        disabled={loading}
-        className="bg-amber-700 text-white px-6 py-3 rounded-full hover:bg-amber-800 disabled:bg-gray-400"
-      >
+      <button onClick={handleOrder} disabled={loading} className="bg-amber-700 text-white px-6 py-3 rounded-full hover:bg-amber-800 disabled:bg-gray-400">
         {loading ? "Placing Order..." : "Place Order"}
       </button>
     </div>
