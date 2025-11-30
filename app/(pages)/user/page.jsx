@@ -13,12 +13,22 @@ import {
   getDocs,
 } from "firebase/firestore";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 // -------------------------------
 // Reusable Order Item
 // -------------------------------
 function OrderItem({ order }) {
   const [expanded, setExpanded] = useState(false);
+
+  const timelineStages = [
+    "pending",
+    "waiting_for_payment",
+    "processing",
+    "shipped",
+    "delivered",
+  ];
+  const stageIndex = timelineStages.indexOf(order.status);
 
   return (
     <div className="border rounded-lg p-4 mb-3 shadow-sm bg-white">
@@ -35,7 +45,28 @@ function OrderItem({ order }) {
       </div>
 
       {expanded && (
-        <div className="mt-3 border-t pt-3">
+        <div className="mt-3 border-t pt-3 space-y-4">
+          {/* Timeline */}
+          <div>
+            <h3 className="font-semibold mb-2">Order Status</h3>
+            <div className="flex justify-between items-center">
+              {timelineStages.map((stage, index) => (
+                <div
+                  key={stage}
+                  className={`flex-1 text-center text-sm ${
+                    index <= stageIndex
+                      ? "text-green-600 font-semibold"
+                      : "text-gray-400"
+                  }`}
+                >
+                  ●
+                  <p className="capitalize">{stage.replace(/_/g, " ")}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Order Info */}
           <p>
             <strong>Status:</strong> {order.status}
           </p>
@@ -49,6 +80,7 @@ function OrderItem({ order }) {
             <strong>Address:</strong> {order.address}
           </p>
 
+          {/* Items */}
           <h3 className="font-semibold mt-3">Items:</h3>
           <div className="mt-2 space-y-1">
             {order.items?.map((item, idx) => (
@@ -69,6 +101,9 @@ function OrderItem({ order }) {
   );
 }
 
+// -------------------------------
+// Main User Dashboard
+// -------------------------------
 export default function UserDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
@@ -178,7 +213,7 @@ export default function UserDashboard() {
         ))}
       </div>
 
-      {/* ---------------- PROFILE ---------------- */}
+      {/* PROFILE */}
       {activeTab === "profile" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
@@ -223,7 +258,7 @@ export default function UserDashboard() {
         </div>
       )}
 
-      {/* ---------------- ORDERS ---------------- */}
+      {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Order History</h2>
@@ -236,7 +271,7 @@ export default function UserDashboard() {
         </div>
       )}
 
-      {/* ---------------- PROMOS ---------------- */}
+      {/* PROMOS */}
       {activeTab === "promos" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Used Promo Codes</h2>
