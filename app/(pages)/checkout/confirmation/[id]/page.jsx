@@ -16,13 +16,14 @@ export default function ConfirmationPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Redirect to signin if not logged in
   useEffect(() => {
-    // Redirect if not logged in
     if (!authLoading && !user) {
       router.push("/auth/signin");
     }
   }, [user, authLoading, router]);
 
+  // Fetch order
   useEffect(() => {
     const fetchOrder = async () => {
       if (!user) return;
@@ -61,11 +62,16 @@ export default function ConfirmationPage() {
   if (authLoading || loading) return <div className="p-10 text-center">Loading...</div>;
   if (!order) return <div className="p-10 text-center text-red-600">Order not found</div>;
 
+  // Safe display of full name
+  const fullName = `${order.firstName || ""} ${order.lastName || ""}`.trim() || "Customer";
+
   return (
     <div className="container mx-auto px-6 py-10">
       <h1 className="text-4xl font-bold text-amber-700 mb-6">✅ Order Confirmation</h1>
-      <p className="text-lg mb-2">Thank you for your purchase, {order.fullName}!</p>
-      <p className="mb-4">Order ID: <span className="font-semibold">{order.id}</span></p>
+      <p className="text-lg mb-2">Thank you for your purchase, {fullName}!</p>
+      <p className="mb-4">
+        Order ID: <span className="font-semibold">{order.id}</span>
+      </p>
 
       {/* Order Items */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

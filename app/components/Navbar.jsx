@@ -15,10 +15,8 @@ export default function Navbar() {
 
   const { user, logout } = useAuth();
   const { cart } = useCart();
-
   const totalCartItems = cart?.length || 0;
 
-  // Fetch user name from Firestore
   useEffect(() => {
     const fetchName = async () => {
       if (!user?.uid) return;
@@ -26,13 +24,15 @@ export default function Navbar() {
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
         if (snap.exists()) {
-          setUserName(snap.data().name || "");
+          const data = snap.data();
+          setUserName(
+            (data.firstName || "") + " " + (data.lastName || "")
+          );
         }
       } catch (error) {
         console.log("Error fetching user name:", error);
       }
     };
-
     fetchName();
   }, [user]);
 
@@ -40,35 +40,29 @@ export default function Navbar() {
     <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         
-        {/* LOGO LEFT */}
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            width={40}
-            height={40}
-            alt="Logo"
-            className="object-contain"
-          />
-          <span className="text-xl font-semibold tracking-wide text-amber-700">
-            Qamar Scarves
-          </span>
+          <Image src="/logo.png" width={40} height={40} alt="Logo" className="object-contain"/>
+          <span className="text-xl font-semibold tracking-wide text-amber-700">Qamar Scarves</span>
         </Link>
 
-        {/* CENTER LINKS */}
+        {/* DESKTOP LINKS */}
         <div className="hidden md:flex gap-8 text-sm font-medium">
-          <Link href="/" className="hover:text-gray-700 transition">Home</Link>
-          <Link href="/NewArrvial" className="hover:text-gray-700 transition">New Arrival</Link>
-          <Link href="/topsellers" className="hover:text-gray-700 transition">Top Sellers</Link>
-          <Link href="/AllScarfs" className="hover:text-gray-700 transition">All Scarfs</Link>
-          <Link href="#footer" className="hover:text-gray-700 transition">Contact</Link>
+          {["NewArrvial", "topsellers", "AllScarfs", "Contact"].map((link, i) => (
+            <Link
+              key={i}
+              href={link === "Contact" ? "#footer" : `/${link}`}
+              className="hover:text-gray-700 transition font-medium"
+            >
+              {link.replace(/([A-Z])/g, ' $1')}
+            </Link>
+          ))}
         </div>
 
-        {/* RIGHT SIDE ITEMS */}
+        {/* RIGHT SIDE */}
         <div className="flex items-center gap-4">
-
-          {/* Clickable Username (Profile Page) */}
           {user && (
-            <Link 
+            <Link
               href="/user"
               className="hidden md:block text-sm text-gray-700 hover:text-black"
             >
@@ -76,24 +70,19 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* CART ICON (hidden if NOT logged in) */}
           {user && (
             <Link href="/Cart" className="relative">
               <ShoppingBag className="w-6 h-6 hover:text-gray-700 cursor-pointer" />
               {totalCartItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
                   {totalCartItems}
                 </span>
               )}
             </Link>
           )}
 
-          {/* LOGIN / LOGOUT BUTTON */}
           {user ? (
-            <button
-              onClick={logout}
-              className="flex items-center gap-1 text-sm text-gray-700 hover:text-black"
-            >
+            <button onClick={logout} className="flex items-center gap-1 text-sm text-gray-700 hover:text-black">
               <LogOut className="w-5 h-5" />
             </button>
           ) : (
@@ -103,7 +92,6 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* MOBILE TOGGLE */}
           <button className="md:hidden" onClick={() => setOpen(!open)}>
             {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -114,10 +102,8 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden bg-white border-t shadow-sm">
           <div className="flex flex-col px-6 py-4 gap-4 text-sm font-medium">
-
-            {/* MOBILE USERNAME */}
             {user && (
-              <Link 
+              <Link
                 href="/user"
                 onClick={() => setOpen(false)}
                 className="text-gray-700 mb-2 underline"
@@ -126,26 +112,26 @@ export default function Navbar() {
               </Link>
             )}
 
-            <Link href="/" onClick={() => setOpen(false)}>Home</Link>
-            <Link href="/NewArrvial" onClick={() => setOpen(false)}>New Arrival</Link>
-            <Link href="/topsellers" onClick={() => setOpen(false)}>Top Sellers</Link>
-            <Link href="/AllScarfs" onClick={() => setOpen(false)}>All Scarfs</Link>
-            <Link href="#footer" onClick={() => setOpen(false)}>Contact</Link>
+            {["NewArrvial", "topsellers", "AllScarfs", "Contact"].map((link, i) => (
+              <Link
+                key={i}
+                href={link === "Contact" ? "#footer" : `/${link}`}
+                onClick={() => setOpen(false)}
+                className="hover:text-gray-700 transition"
+              >
+                {link.replace(/([A-Z])/g, ' $1')}
+              </Link>
+            ))}
 
-            {/* MOBILE CART */}
             {user && (
               <Link href="/Cart" onClick={() => setOpen(false)}>
                 Cart ({totalCartItems})
               </Link>
             )}
 
-            {/* MOBILE LOGIN / LOGOUT */}
             {user ? (
               <button
-                onClick={() => {
-                  logout();
-                  setOpen(false);
-                }}
+                onClick={() => { logout(); setOpen(false); }}
                 className="text-left text-red-600"
               >
                 Logout

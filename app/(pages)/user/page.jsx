@@ -42,6 +42,12 @@ function OrderItem({ order }) {
           <p>
             <strong>Total:</strong> {order.total.toFixed(2)} EGP
           </p>
+          <p>
+            <strong>Customer:</strong> {order.firstName} {order.lastName}
+          </p>
+          <p>
+            <strong>Address:</strong> {order.address}
+          </p>
 
           <h3 className="font-semibold mt-3">Items:</h3>
           <div className="mt-2 space-y-1">
@@ -67,7 +73,8 @@ export default function UserDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
 
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
@@ -77,7 +84,8 @@ export default function UserDashboard() {
       const docSnap = await getDoc(doc(db, "users", user.uid));
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setFullName(data.name || "");
+        setFirstName(data.firstName || "");
+        setLastName(data.lastName || "");
         setPhone(data.phone || "");
         setAddress(data.location || "");
       }
@@ -87,13 +95,14 @@ export default function UserDashboard() {
   };
 
   const handleProfileUpdate = async () => {
-    if (!fullName.trim() || !phone.trim()) {
-      return toast.error("Name and phone are required.");
+    if (!firstName.trim() || !lastName.trim() || !phone.trim()) {
+      return toast.error("First name, last name, and phone are required.");
     }
 
     try {
       await updateDoc(doc(db, "users", user.uid), {
-        name: fullName,
+        firstName,
+        lastName,
         phone,
         location: address,
       });
@@ -124,7 +133,7 @@ export default function UserDashboard() {
         where("usersUsed", "array-contains", user.uid)
       );
       const snap = await getDocs(q);
-      setPromoCodes(snap.docs.map((d) => d.data()));
+      setPromoCodes(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (err) {
       console.error(err);
     }
@@ -169,18 +178,24 @@ export default function UserDashboard() {
         ))}
       </div>
 
-      {/* CONTENT */}
       {/* ---------------- PROFILE ---------------- */}
       {activeTab === "profile" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
-              placeholder="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full border rounded-lg p-3"
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
             <input
@@ -216,9 +231,7 @@ export default function UserDashboard() {
           {orders.length === 0 ? (
             <p className="text-gray-600">You have no orders yet.</p>
           ) : (
-            orders.map((order) => (
-              <OrderItem key={order.id} order={order} />
-            ))
+            orders.map((order) => <OrderItem key={order.id} order={order} />)
           )}
         </div>
       )}
@@ -231,9 +244,9 @@ export default function UserDashboard() {
           {promoCodes.length === 0 ? (
             <p className="text-gray-600">No promo codes used yet.</p>
           ) : (
-            promoCodes.map((promo, idx) => (
+            promoCodes.map((promo) => (
               <div
-                key={idx}
+                key={promo.id}
                 className="border p-4 rounded-lg mb-3 shadow-sm bg-gray-50"
               >
                 <p>

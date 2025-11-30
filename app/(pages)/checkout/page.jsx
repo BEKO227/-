@@ -16,6 +16,7 @@ import {
   where,
   getDocs,
   onSnapshot,
+  runTransaction,
 } from "firebase/firestore";
 import toast from "react-hot-toast";
 
@@ -24,7 +25,8 @@ export default function CheckoutPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [building, setBuilding] = useState("");
   const [street, setStreet] = useState("");
@@ -62,7 +64,8 @@ export default function CheckoutPage() {
 
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setFullName(data.name || "");
+            setFirstName(data.firstName || "");
+            setLastName(data.lastName || "");
             setPhone(data.phone || "");
 
             if (data.location) {
@@ -182,39 +185,50 @@ export default function CheckoutPage() {
   };
 
   // ------------------------------------------------
-  // Update user stats
+  // Update user stats & save order ID
   // ------------------------------------------------
-  const updateUserStats = async (order) => {
+  const updateUserStats = async (order, orderId) => {
     if (!user) return;
+
     try {
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+      await runTransaction(db, async (tx) => {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await tx.get(userRef);
 
-      if (!userSnap.exists()) return;
+        if (!userSnap.exists()) {
+          tx.set(userRef, {
+            productsBoughtCount: 0,
+            avgSpent: 0,
+            totalSpent: 0,
+            couponsUsedCount: 0,
+            purchasesWithoutSale: 0,
+            orders: [],
+          }, { merge: true });
+        }
 
-      const data = userSnap.data();
+        const data = userSnap.data() || {};
+        const itemsCount = order.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const prevProductsCount = data.productsBoughtCount || 0;
+        const prevTotalSpent = data.totalSpent || 0;
 
-      const productsBoughtCount = (data.productsBoughtCount || 0) +
-        order.items.reduce((sum, item) => sum + item.quantity, 0);
+        const newProductsBoughtCount = prevProductsCount + itemsCount;
+        const newTotalSpent = prevTotalSpent + (order.total || 0);
+        const newAvgSpent = newProductsBoughtCount > 0 ? newTotalSpent / newProductsBoughtCount : 0;
+        const newPurchasesWithoutSale = (data.purchasesWithoutSale || 0) + (order.discount && order.discount > 0 ? 0 : 1);
+        const newCouponsUsedCount = (data.couponsUsedCount || 0) + (order.promoCode ? 1 : 0);
+        const newOrders = data.orders ? [...data.orders, orderId] : [orderId];
 
-      const avgSpent =
-        ((data.avgSpent || 0) * (data.productsBoughtCount || 0) + order.total) /
-        (productsBoughtCount || 1);
-
-      const purchasesWithoutSale =
-        (data.purchasesWithoutSale || 0) + (order.discount === 0 ? 1 : 0);
-
-      const couponsUsedCount =
-        (data.couponsUsedCount || 0) + (order.promoCode ? 1 : 0);
-
-      await updateDoc(userRef, {
-        productsBoughtCount,
-        avgSpent,
-        purchasesWithoutSale,
-        couponsUsedCount,
+        tx.update(userRef, {
+          productsBoughtCount: newProductsBoughtCount,
+          totalSpent: newTotalSpent,
+          avgSpent: newAvgSpent,
+          purchasesWithoutSale: newPurchasesWithoutSale,
+          couponsUsedCount: newCouponsUsedCount,
+          orders: newOrders,
+        });
       });
     } catch (err) {
-      console.error("Failed to update user stats:", err);
+      console.error("Failed to update user stats (transaction):", err);
     }
   };
 
@@ -222,7 +236,7 @@ export default function CheckoutPage() {
   // Place order
   // ------------------------------------------------
   const handleOrder = async () => {
-    if (!fullName || !phone || !building || !street || !city || !government)
+    if (!firstName || !lastName || !phone || !building || !street || !city || !government)
       return toast.error("Fill all required fields.");
     if (paymentMethod === "InstaPay" && !instaRef)
       return toast.error("Enter InstaPay reference number.");
@@ -241,7 +255,8 @@ export default function CheckoutPage() {
         paymentMethod,
         referenceNumber: paymentMethod === "InstaPay" ? instaRef : null,
         status: paymentMethod === "COD" ? "pending" : "waiting_for_payment",
-        fullName,
+        firstName,
+        lastName,
         phone,
         address: `${building} - ${street} - ${city} - ${government}`,
         promoCode: promoApplied ? promoCode.toUpperCase() : null,
@@ -251,7 +266,7 @@ export default function CheckoutPage() {
       const docRef = await addDoc(collection(db, "orders"), orderData);
 
       await saveAddressToUser();
-      await updateUserStats(orderData); // ✅ update stats here
+      await updateUserStats(orderData, docRef.id);
 
       router.replace(`/checkout/confirmation/${docRef.id}`);
       clearCart();
@@ -288,7 +303,10 @@ export default function CheckoutPage() {
       {/* CUSTOMER INFO */}
       <div className="mb-6 border p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-2">Customer Information</h2>
-        <input type="text" placeholder="Full Name *" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <div className="flex gap-2">
+          <input type="text" placeholder="First Name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-1/2 border rounded p-2 mb-2"/>
+          <input type="text" placeholder="Last Name *" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-1/2 border rounded p-2 mb-2"/>
+        </div>
         <input type="text" placeholder="Phone Number *" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded p-2 mb-2"/>
       </div>
 

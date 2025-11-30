@@ -6,13 +6,14 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { auth, db } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 
 const signupSchema = z.object({
-  name: z.string().min(2),
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email(),
   password: z
     .string()
@@ -35,17 +36,20 @@ export default function Signup() {
 
   const onSubmit = async (data) => {
     try {
-      // Check duplicates by email or phone
-      const docRef = doc(db, "usersByEmail", data.email);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
+      const usersRef = collection(db, "users");
+
+      // Check for duplicate email
+      const emailQuery = query(usersRef, where("email", "==", data.email));
+      const emailSnap = await getDocs(emailQuery);
+      if (!emailSnap.empty) {
         toast.error("Email already exists");
         return;
       }
 
-      const phoneRef = doc(db, "usersByPhone", data.phone);
-      const phoneSnap = await getDoc(phoneRef);
-      if (phoneSnap.exists()) {
+      // Check for duplicate phone
+      const phoneQuery = query(usersRef, where("phone", "==", data.phone));
+      const phoneSnap = await getDocs(phoneQuery);
+      if (!phoneSnap.empty) {
         toast.error("Phone already exists");
         return;
       }
@@ -54,9 +58,10 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const uid = userCredential.user.uid;
 
-      // Store extra info in Firestore with default values
+      // Store user info in Firestore
       await setDoc(doc(db, "users", uid), {
-        name: data.name,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         phone: data.phone,
         age: data.age,
@@ -69,9 +74,6 @@ export default function Signup() {
         createdAt: new Date().toISOString(),
       });
 
-      await setDoc(doc(db, "usersByEmail", data.email), { uid });
-      await setDoc(doc(db, "usersByPhone", data.phone), { uid });
-
       toast.success("Account created! You can now sign in.");
       window.location.href = "/auth/signin";
     } catch (err) {
@@ -79,6 +81,8 @@ export default function Signup() {
       toast.error(err.message);
     }
   };
+
+  const ageOptions = Array.from({ length: 120 }, (_, i) => i + 1);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fdfaf7]">
@@ -89,41 +93,61 @@ export default function Signup() {
         <h1 className="text-3xl font-bold text-amber-800 text-center mb-6">Create Account</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <input {...register("name")} placeholder="Name" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
-          {errors.name && <span className="text-red-500">{errors.name.message}</span>}
-
-          <input {...register("email")} placeholder="Email" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
-          {errors.email && <span className="text-red-500">{errors.email.message}</span>}
-
-          <input {...register("phone")} placeholder="Phone" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
-          {errors.phone && <span className="text-red-500">{errors.phone.message}</span>}
-
-          <input type="number" {...register("age", { valueAsNumber: true })} placeholder="Age" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
-          {errors.age && <span className="text-red-500">{errors.age.message}</span>}
-
-          <select {...register("gender")} className="border border-amber-300 rounded-xl p-4 w-full text-lg">
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-
-          <div className="relative">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
             <input
-              type={showPassword ? "text" : "password"}
-              {...register("password")}
-              placeholder="Password"
-              className="border border-amber-300 rounded-xl p-4 w-full text-lg pr-12"
+              {...register("firstName")}
+              placeholder="First Name"
+              className="border border-amber-300 rounded-xl p-4 w-full text-lg"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+            {errors.firstName && <span className="text-red-500">{errors.firstName.message}</span>}
           </div>
-          {errors.password && <span className="text-red-500">{errors.password.message}</span>}
 
-          <button type="submit" className="bg-amber-700 hover:bg-amber-800 text-white font-semibold w-full py-4 rounded-xl text-lg mt-2">Sign Up</button>
+          <div className="flex-1">
+            <input
+              {...register("lastName")}
+              placeholder="Last Name"
+              className="border border-amber-300 rounded-xl p-4 w-full text-lg"
+            />
+            {errors.lastName && <span className="text-red-500">{errors.lastName.message}</span>}
+          </div>
+        </div>  
+        <input {...register("email")} placeholder="Email" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
+        {errors.email && <span className="text-red-500">{errors.email.message}</span>}
+
+        <input {...register("phone")} placeholder="Phone" className="border border-amber-300 rounded-xl p-4 w-full text-lg"/>
+        {errors.phone && <span className="text-red-500">{errors.phone.message}</span>}
+
+        <select {...register("age", { valueAsNumber: true })} className="border border-amber-300 rounded-xl p-4 w-full text-lg">
+          {ageOptions.map((age) => (
+            <option key={age} value={age}>{age}</option>
+          ))}
+        </select>
+        {errors.age && <span className="text-red-500">{errors.age.message}</span>}
+
+        <select {...register("gender")} className="border border-amber-300 rounded-xl p-4 w-full text-lg">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+            placeholder="Password"
+            className="border border-amber-300 rounded-xl p-4 w-full text-lg pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+        {errors.password && <span className="text-red-500">{errors.password.message}</span>}
+
+        <button type="submit" className="bg-amber-700 hover:bg-amber-800 text-white font-semibold w-full py-4 rounded-xl text-lg mt-2">Sign Up</button>
         </form>
 
         <p className="text-center text-gray-600 mt-4 text-sm">
