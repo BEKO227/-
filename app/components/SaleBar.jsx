@@ -3,25 +3,35 @@
 import React, { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useLanguage } from "@/app/LanguageContext";
+
 export default function SaleBar() {
   const [text, setText] = useState("Loading...");
+  const { lang } = useLanguage();
 
   useEffect(() => {
-    // Listen in real-time to Firestore
     const unsubscribe = onSnapshot(
       doc(db, "Sale", "SaleBar"),
       (snapshot) => {
         if (snapshot.exists()) {
-          setText(snapshot.data().description || "SALE — SALE — SALE");
+          const data = snapshot.data();
+          // Use lang-specific field if available
+          const displayText =
+            lang === "ar"
+              ? data.description_ar || data.description || "تخفيض — تخفيض — تخفيض"
+              : data.description || "SALE — SALE — SALE";
+          setText(displayText);
         } else {
-          setText("SALE — SALE — SALE");
+          setText(lang === "ar" ? "تخفيض — تخفيض — تخفيض" : "SALE — SALE — SALE");
         }
       },
-      () => setText("SALE — SALE — SALE")
+      () => {
+        setText(lang === "ar" ? "تخفيض — تخفيض — تخفيض" : "SALE — SALE — SALE");
+      }
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [lang]);
 
   return (
     <div className="bg-amber-100 text-amber-800 overflow-hidden">

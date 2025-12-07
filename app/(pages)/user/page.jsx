@@ -1,33 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAuth } from "../../AuthContext";
+import { useEffect, useState } from "react";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
 import toast from "react-hot-toast";
-import Image from "next/image";
+import { useAuth } from "../../AuthContext";
+import { useLanguage } from '@/app/LanguageContext';
 
 // -------------------------------
 // Reusable Order Item
 // -------------------------------
-function OrderItem({ order }) {
+function OrderItem({ order, t }) {
   const [expanded, setExpanded] = useState(false);
-
-  const timelineStages = [
-    "pending",
-    "waiting_for_payment",
-    "processing",
-    "shipped",
-    "delivered",
-  ];
+  const timelineStages = ["pending", "waiting_for_payment", "processing", "shipped", "delivered"];
   const stageIndex = timelineStages.indexOf(order.status);
 
   return (
@@ -37,30 +22,26 @@ function OrderItem({ order }) {
         className="flex justify-between cursor-pointer"
       >
         <p className="font-semibold text-gray-800">
-          Order ID: <span className="text-amber-700">{order.id}</span>
+          {t("Order ID", "رقم الطلب")}: <span className="text-amber-700">{order.id}</span>
         </p>
-        <button className="text-amber-700 font-semibold">
-          {expanded ? "Hide" : "Details"}
-        </button>
+        <button className="text-amber-700 font-semibold">{expanded ? t("Hide", "إخفاء") : t("Details", "التفاصيل")}</button>
       </div>
 
       {expanded && (
         <div className="mt-3 border-t pt-3 space-y-4">
           {/* Timeline */}
           <div>
-            <h3 className="font-semibold mb-2">Order Status</h3>
+            <h3 className="font-semibold mb-2">{t("Order Status", "حالة الطلب")}</h3>
             <div className="flex justify-between items-center">
               {timelineStages.map((stage, index) => (
                 <div
                   key={stage}
                   className={`flex-1 text-center text-sm ${
-                    index <= stageIndex
-                      ? "text-green-600 font-semibold"
-                      : "text-gray-400"
+                    index <= stageIndex ? "text-green-600 font-semibold" : "text-gray-400"
                   }`}
                 >
                   ●
-                  <p className="capitalize">{stage.replace(/_/g, " ")}</p>
+                  <p className="capitalize">{t(stage.replace(/_/g, " "), stage.replace(/_/g, " "))}</p>
                 </div>
               ))}
             </div>
@@ -68,26 +49,23 @@ function OrderItem({ order }) {
 
           {/* Order Info */}
           <p>
-            <strong>Status:</strong> {order.status}
+            <strong>{t("Status", "الحالة")}:</strong> {order.status}
           </p>
           <p>
-            <strong>Total:</strong> {order.total.toFixed(2)} EGP
+            <strong>{t("Total", "الإجمالي")}:</strong> {order.total.toFixed(2)} EGP
           </p>
           <p>
-            <strong>Customer:</strong> {order.firstName} {order.lastName}
+            <strong>{t("Customer", "العميل")}:</strong> {order.firstName} {order.lastName}
           </p>
           <p>
-            <strong>Address:</strong> {order.address}
+            <strong>{t("Address", "العنوان")}:</strong> {order.address}
           </p>
 
           {/* Items */}
-          <h3 className="font-semibold mt-3">Items:</h3>
+          <h3 className="font-semibold mt-3">{t("Items", "المنتجات")}:</h3>
           <div className="mt-2 space-y-1">
             {order.items?.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between text-sm text-gray-700"
-              >
+              <div key={idx} className="flex justify-between text-sm text-gray-700">
                 <span>{item.title}</span>
                 <span>
                   {item.quantity} × {item.price} EGP
@@ -106,8 +84,10 @@ function OrderItem({ order }) {
 // -------------------------------
 export default function UserDashboard() {
   const { user, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("profile");
+  const { lang } = useLanguage();
+  const t = (en, ar) => (lang === "en" ? en : ar);
 
+  const [activeTab, setActiveTab] = useState("profile");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -131,9 +111,8 @@ export default function UserDashboard() {
 
   const handleProfileUpdate = async () => {
     if (!firstName.trim() || !lastName.trim() || !phone.trim()) {
-      return toast.error("First name, last name, and phone are required.");
+      return toast.error(t("First name, last name, and phone are required.", "الاسم الأول، الاسم الأخير، والهاتف مطلوب"));
     }
-
     try {
       await updateDoc(doc(db, "users", user.uid), {
         firstName,
@@ -141,9 +120,9 @@ export default function UserDashboard() {
         phone,
         location: address,
       });
-      toast.success("Profile updated!");
+      toast.success(t("Profile updated!", "تم تحديث الملف الشخصي!"));
     } catch (err) {
-      toast.error("Failed to update profile.");
+      toast.error(t("Failed to update profile.", "فشل تحديث الملف الشخصي"));
     }
   };
 
@@ -163,10 +142,7 @@ export default function UserDashboard() {
   const fetchPromoCodes = async () => {
     if (!user) return;
     try {
-      const q = query(
-        collection(db, "promocodes"),
-        where("usersUsed", "array-contains", user.uid)
-      );
+      const q = query(collection(db, "promocodes"), where("usersUsed", "array-contains", user.uid));
       const snap = await getDocs(q);
       setPromoCodes(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (err) {
@@ -182,19 +158,12 @@ export default function UserDashboard() {
     }
   }, [user]);
 
-  if (authLoading)
-    return <p className="p-10 text-center text-gray-600">Loading...</p>;
-
-  if (!user)
-    return (
-      <p className="p-10 text-center text-gray-600">
-        Please sign in to access your dashboard.
-      </p>
-    );
+  if (authLoading) return <p className="p-10 text-center text-gray-600">{t("Loading...", "جار التحميل...")}</p>;
+  if (!user) return <p className="p-10 text-center text-gray-600">{t("Please sign in to access your dashboard.", "يرجى تسجيل الدخول للوصول إلى حسابك")}</p>;
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      <h1 className="text-4xl font-bold mb-8 text-gray-900">My Account</h1>
+      <h1 className="text-4xl font-bold mb-8 text-gray-900">{t("My Account", "حسابي")}</h1>
 
       {/* Tabs */}
       <div className="flex gap-6 border-b pb-2 mb-8">
@@ -208,7 +177,7 @@ export default function UserDashboard() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {tab}
+            {tab === "profile" ? t("Profile", "الملف الشخصي") : tab === "orders" ? t("Orders", "الطلبات") : t("Promos", "الرموز")}
           </button>
         ))}
       </div>
@@ -216,44 +185,17 @@ export default function UserDashboard() {
       {/* PROFILE */}
       {activeTab === "profile" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
+          <h2 className="text-xl font-semibold mb-4">{t("Profile Information", "معلومات الملف الشخصي")}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full border rounded-lg p-3"
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full border rounded-lg p-3"
-            />
-            <input
-              type="text"
-              placeholder="Phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full border rounded-lg p-3"
-            />
-            <input
-              type="text"
-              placeholder="Address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full border rounded-lg p-3"
-            />
+            <input type="text" placeholder={t("First Name", "الاسم الأول")} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full border rounded-lg p-3" />
+            <input type="text" placeholder={t("Last Name", "الاسم الأخير")} value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full border rounded-lg p-3" />
+            <input type="text" placeholder={t("Phone", "الهاتف")} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded-lg p-3" />
+            <input type="text" placeholder={t("Address", "العنوان")} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full border rounded-lg p-3" />
           </div>
 
-          <button
-            onClick={handleProfileUpdate}
-            className="mt-5 bg-amber-700 text-white px-6 py-2 rounded-lg hover:bg-amber-800 transition"
-          >
-            Save Changes
+          <button onClick={handleProfileUpdate} className="mt-5 bg-amber-700 text-white px-6 py-2 rounded-lg hover:bg-amber-800 transition">
+            {t("Save Changes", "حفظ التغييرات")}
           </button>
         </div>
       )}
@@ -261,41 +203,28 @@ export default function UserDashboard() {
       {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Order History</h2>
-
-          {orders.length === 0 ? (
-            <p className="text-gray-600">You have no orders yet.</p>
-          ) : (
-            orders.map((order) => <OrderItem key={order.id} order={order} />)
-          )}
+          <h2 className="text-xl font-semibold mb-4">{t("Order History", "تاريخ الطلبات")}</h2>
+          {orders.length === 0 ? <p className="text-gray-600">{t("You have no orders yet.", "لا يوجد لديك طلبات بعد")}</p> : orders.map((order) => <OrderItem key={order.id} order={order} t={t} />)}
         </div>
       )}
 
       {/* PROMOS */}
       {activeTab === "promos" && (
         <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Used Promo Codes</h2>
-
+          <h2 className="text-xl font-semibold mb-4">{t("Used Promo Codes", "الرموز المستخدمة")}</h2>
           {promoCodes.length === 0 ? (
-            <p className="text-gray-600">No promo codes used yet.</p>
+            <p className="text-gray-600">{t("No promo codes used yet.", "لا توجد رموز مستخدمة بعد")}</p>
           ) : (
             promoCodes.map((promo) => (
-              <div
-                key={promo.id}
-                className="border p-4 rounded-lg mb-3 shadow-sm bg-gray-50"
-              >
+              <div key={promo.id} className="border p-4 rounded-lg mb-3 shadow-sm bg-gray-50">
                 <p>
-                  <strong>Code:</strong> {promo.code}
+                  <strong>{t("Code", "الرمز")}:</strong> {promo.code}
                 </p>
                 <p>
-                  <strong>Discount:</strong>{" "}
-                  {promo.discountType === "percentage"
-                    ? `${promo.discountValue}%`
-                    : `${promo.discountValue} EGP`}
+                  <strong>{t("Discount", "الخصم")}:</strong> {promo.discountType === "percentage" ? `${promo.discountValue}%` : `${promo.discountValue} EGP`}
                 </p>
                 <p>
-                  <strong>Expires:</strong>{" "}
-                  {promo.expiresAt.toDate().toLocaleDateString()}
+                  <strong>{t("Expires", "ينتهي في")}:</strong> {promo.expiresAt.toDate().toLocaleDateString()}
                 </p>
               </div>
             ))

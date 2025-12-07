@@ -19,11 +19,14 @@ import {
   runTransaction,
 } from "firebase/firestore";
 import toast from "react-hot-toast";
+import { useLanguage } from '@/app/LanguageContext';
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { lang } = useLanguage();
+  const t = (en, ar) => (lang === "en" ? en : ar);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -52,22 +55,18 @@ export default function CheckoutPage() {
     "North Sinai", "South Sinai", "Matrouh",
   ];
 
-  // ------------------------------------------------
-  // Prefill user data
-  // ------------------------------------------------
+  // ---------------- Prefill user data ----------------
   useEffect(() => {
     if (user) {
       const fetchUserData = async () => {
         try {
           const docRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(docRef);
-
           if (docSnap.exists()) {
             const data = docSnap.data();
             setFirstName(data.firstName || "");
             setLastName(data.lastName || "");
             setPhone(data.phone || "");
-
             if (data.location) {
               const parts = data.location.split(" - ");
               setBuilding(parts[0] || "");
@@ -77,30 +76,24 @@ export default function CheckoutPage() {
             }
           }
         } catch (err) {
-          console.error("Failed to fetch user:", err);
+          console.error(t("Failed to fetch user:", "فشل في جلب بيانات المستخدم"), err);
         }
       };
-
       fetchUserData();
     }
   }, [user]);
 
-  // ------------------------------------------------
-  // Auto-save address
-  // ------------------------------------------------
   const saveAddressToUser = async () => {
     if (!user) return;
     try {
       const location = `${building} - ${street} - ${city} - ${government}`;
       await updateDoc(doc(db, "users", user.uid), { location });
     } catch (err) {
-      console.error("Update location failed:", err);
+      console.error(t("Update location failed:", "فشل تحديث العنوان"), err);
     }
   };
 
-  // ------------------------------------------------
-  // Free delivery threshold
-  // ------------------------------------------------
+  // ---------------- Free delivery threshold ----------------
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "Sale", "freeDelivery"), (snap) => {
       if (snap.exists()) setFreeDeliveryThreshold(snap.data().Price || 0);
@@ -111,9 +104,7 @@ export default function CheckoutPage() {
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const qualifiesForFreeDelivery = cartTotal >= freeDeliveryThreshold;
 
-  // ------------------------------------------------
-  // Delivery fee
-  // ------------------------------------------------
+  // ---------------- Delivery fee ----------------
   useEffect(() => {
     const fetchDeliveryFee = async () => {
       if (!government) return;
@@ -122,7 +113,7 @@ export default function CheckoutPage() {
         const feeSnap = await getDoc(feeRef);
         setDeliveryFee(feeSnap.exists() ? feeSnap.data().fee || 0 : 60);
       } catch (err) {
-        console.error("Error loading delivery fee:", err);
+        console.error(t("Error loading delivery fee:", "خطأ في تحميل رسوم التوصيل"), err);
       }
     };
     fetchDeliveryFee();
@@ -131,16 +122,12 @@ export default function CheckoutPage() {
   const finalDeliveryFee = qualifiesForFreeDelivery ? 0 : deliveryFee;
   const total = Math.max(cartTotal - discount + finalDeliveryFee, 0);
 
-  // ------------------------------------------------
-  // Protected route
-  // ------------------------------------------------
+  // ---------------- Protected route ----------------
   useEffect(() => {
     if (!authLoading && !placingOrder && !user) router.push("/auth/signin");
   }, [user, authLoading, placingOrder, router]);
 
-  // ------------------------------------------------
-  // Promo code
-  // ------------------------------------------------
+  // ---------------- Promo code ----------------
   const userHasPreviousOrders = async () => {
     const q = query(collection(db, "orders"), where("userId", "==", user.uid));
     const snap = await getDocs(q);
@@ -148,33 +135,29 @@ export default function CheckoutPage() {
   };
 
   const handleApplyPromo = async () => {
-    if (!promoCode.trim()) return toast.error("Enter promo code");
+    if (!promoCode.trim()) return toast.error(t("Enter promo code", "أدخل رمز الخصم"));
     const code = promoCode.toUpperCase();
     try {
       const promoRef = doc(db, "promocodes", code);
       const promoSnap = await getDoc(promoRef);
-      if (!promoSnap.exists()) return toast.error("Invalid promo code");
+      if (!promoSnap.exists()) return toast.error(t("Invalid promo code", "رمز خصم غير صالح"));
 
       const promo = promoSnap.data();
       const now = new Date();
-      if (!promo.active) return toast.error("Promo disabled");
-      if (promo.expiresAt.toDate() < now) return toast.error("Expired promo");
-      if (promo.firstOrderOnly && (await userHasPreviousOrders()))
-        return toast.error("First order only");
-      if (promo.usedCount >= promo.usageLimit)
-        return toast.error("Promo usage limit reached");
+      if (!promo.active) return toast.error(t("Promo disabled", "الرمز معطل"));
+      if (promo.expiresAt.toDate() < now) return toast.error(t("Expired promo", "الرمز منتهي"));
+      if (promo.firstOrderOnly && (await userHasPreviousOrders())) return toast.error(t("First order only", "للطلب الأول فقط"));
+      if (promo.usedCount >= promo.usageLimit) return toast.error(t("Promo usage limit reached", "تم استنفاد حد استخدام الرمز"));
 
-      let newDiscount = 0;
-      if (promo.discountType === "percentage") newDiscount = (cartTotal * promo.discountValue) / 100;
-      else if (promo.discountType === "fixed") newDiscount = promo.discountValue;
+      let newDiscount = promo.discountType === "percentage" ? (cartTotal * promo.discountValue) / 100 : promo.discountValue;
       newDiscount = Math.min(newDiscount, promo.maxDiscount);
 
       setDiscount(newDiscount);
       setPromoApplied(true);
       await updateDoc(promoRef, { usedCount: promo.usedCount + 1 });
-      toast.success(`Saved ${newDiscount.toFixed(2)} EGP`);
+      toast.success(t(`Saved ${newDiscount.toFixed(2)} EGP`, `تم حفظ ${newDiscount.toFixed(2)} جنيه`));
     } catch {
-      toast.error("Failed to apply promo");
+      toast.error(t("Failed to apply promo", "فشل تطبيق الرمز"));
     }
   };
 
@@ -184,62 +167,12 @@ export default function CheckoutPage() {
     setPromoApplied(false);
   };
 
-  // ------------------------------------------------
-  // Update user stats & save order ID
-  // ------------------------------------------------
-  const updateUserStats = async (order, orderId) => {
-    if (!user) return;
-
-    try {
-      await runTransaction(db, async (tx) => {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await tx.get(userRef);
-
-        if (!userSnap.exists()) {
-          tx.set(userRef, {
-            productsBoughtCount: 0,
-            avgSpent: 0,
-            totalSpent: 0,
-            couponsUsedCount: 0,
-            purchasesWithoutSale: 0,
-            orders: [],
-          }, { merge: true });
-        }
-
-        const data = userSnap.data() || {};
-        const itemsCount = order.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-        const prevProductsCount = data.productsBoughtCount || 0;
-        const prevTotalSpent = data.totalSpent || 0;
-
-        const newProductsBoughtCount = prevProductsCount + itemsCount;
-        const newTotalSpent = prevTotalSpent + (order.total || 0);
-        const newAvgSpent = newProductsBoughtCount > 0 ? newTotalSpent / newProductsBoughtCount : 0;
-        const newPurchasesWithoutSale = (data.purchasesWithoutSale || 0) + (order.discount && order.discount > 0 ? 0 : 1);
-        const newCouponsUsedCount = (data.couponsUsedCount || 0) + (order.promoCode ? 1 : 0);
-        const newOrders = data.orders ? [...data.orders, orderId] : [orderId];
-
-        tx.update(userRef, {
-          productsBoughtCount: newProductsBoughtCount,
-          totalSpent: newTotalSpent,
-          avgSpent: newAvgSpent,
-          purchasesWithoutSale: newPurchasesWithoutSale,
-          couponsUsedCount: newCouponsUsedCount,
-          orders: newOrders,
-        });
-      });
-    } catch (err) {
-      console.error("Failed to update user stats (transaction):", err);
-    }
-  };
-
-  // ------------------------------------------------
-  // Place order
-  // ------------------------------------------------
+  // ---------------- Place order ----------------
   const handleOrder = async () => {
     if (!firstName || !lastName || !phone || !building || !street || !city || !government)
-      return toast.error("Fill all required fields.");
+      return toast.error(t("Fill all required fields.", "يرجى ملء جميع الحقول المطلوبة"));
     if (paymentMethod === "InstaPay" && !instaRef)
-      return toast.error("Enter InstaPay reference number.");
+      return toast.error(t("Enter InstaPay reference number.", "أدخل رقم المرجع الخاص بـ InstaPay"));
 
     setPlacingOrder(true);
     setLoading(true);
@@ -264,67 +197,55 @@ export default function CheckoutPage() {
       };
 
       const docRef = await addDoc(collection(db, "orders"), orderData);
-
       await saveAddressToUser();
-      await updateUserStats(orderData, docRef.id);
-
       router.replace(`/checkout/confirmation/${docRef.id}`);
       clearCart();
     } catch (err) {
       console.error(err);
-      toast.error("Order failed");
+      toast.error(t("Order failed", "فشل الطلب"));
     }
 
     setLoading(false);
     setPlacingOrder(false);
   };
 
-  // ------------------------------------------------
-  // Render
-  // ------------------------------------------------
+  // ---------------- Render ----------------
   if (authLoading || !user || cart.length === 0)
-    return (
-      <div className="p-10 text-center text-amber-700 text-xl">
-        Loading...
-      </div>
-    );
+    return <div className="p-10 text-center text-amber-700 text-xl">{t("Loading...", "جار التحميل...")}</div>;
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      <button
-        onClick={() => router.back()}
-        className="mb-4 text-amber-700 font-semibold hover:underline"
-      >
-        ← Back
+      <button onClick={() => router.back()} className="mb-4 text-amber-700 font-semibold hover:underline">
+        ← {t("Back", "رجوع")}
       </button>
 
-      <h1 className="text-3xl font-bold mb-6">Checkout</h1>
+      <h1 className="text-3xl font-bold mb-6">{t("Checkout", "إتمام الطلب")}</h1>
 
       {/* CUSTOMER INFO */}
       <div className="mb-6 border p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Customer Information</h2>
+        <h2 className="text-xl font-semibold mb-2">{t("Customer Information", "معلومات العميل")}</h2>
         <div className="flex gap-2">
-          <input type="text" placeholder="First Name *" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-1/2 border rounded p-2 mb-2"/>
-          <input type="text" placeholder="Last Name *" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-1/2 border rounded p-2 mb-2"/>
+          <input type="text" placeholder={t("First Name *", "الاسم الأول *")} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-1/2 border rounded p-2 mb-2"/>
+          <input type="text" placeholder={t("Last Name *", "الاسم الأخير *")} value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-1/2 border rounded p-2 mb-2"/>
         </div>
-        <input type="text" placeholder="Phone Number *" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <input type="text" placeholder={t("Phone Number *", "رقم الهاتف *")} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded p-2 mb-2"/>
       </div>
 
       {/* ADDRESS */}
       <div className="mb-6 border p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Delivery Address</h2>
-        <input type="text" placeholder="Building Name / Number *" value={building} onChange={(e) => setBuilding(e.target.value)} className="w-full border rounded p-2 mb-2"/>
-        <input type="text" placeholder="Street Name *" value={street} onChange={(e) => setStreet(e.target.value)} className="w-full border rounded p-2 mb-2"/>
-        <input type="text" placeholder="City *" value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <h2 className="text-xl font-semibold mb-2">{t("Delivery Address", "عنوان التوصيل")}</h2>
+        <input type="text" placeholder={t("Building Name / Number *", "اسم / رقم المبنى *")} value={building} onChange={(e) => setBuilding(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <input type="text" placeholder={t("Street Name *", "اسم الشارع *")} value={street} onChange={(e) => setStreet(e.target.value)} className="w-full border rounded p-2 mb-2"/>
+        <input type="text" placeholder={t("City *", "المدينة *")} value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded p-2 mb-2"/>
         <select value={government} onChange={(e) => setGovernment(e.target.value)} className="w-full border rounded p-2 mb-2">
-          <option value="">Select Government *</option>
+          <option value="">{t("Select Government *", "اختر المحافظة *")}</option>
           {governments.map((gov) => <option key={gov} value={gov}>{gov}</option>)}
         </select>
       </div>
 
       {/* ORDER SUMMARY */}
       <div className="mb-6 border p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
+        <h2 className="text-xl font-semibold mb-2">{t("Order Summary", "ملخص الطلب")}</h2>
         {cart.map((item) => (
           <div key={item.id} className="flex justify-between mb-2">
             <span>{item.title} × {item.quantity}</span>
@@ -332,45 +253,96 @@ export default function CheckoutPage() {
           </div>
         ))}
         <div className="mt-4 flex gap-2 items-center">
-          <input type="text" placeholder="Promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="border p-2 rounded flex-1" disabled={promoApplied}/>
+          <input type="text" placeholder={t("Promo code", "رمز الخصم")} value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="border p-2 rounded flex-1" disabled={promoApplied}/>
           {!promoApplied ? (
-            <button onClick={handleApplyPromo} className="bg-amber-700 text-white px-4 py-2 rounded">Apply</button>
+            <button onClick={handleApplyPromo} className="bg-amber-700 text-white px-4 py-2 rounded">{t("Apply", "تطبيق")}</button>
           ) : (
-            <button onClick={handleRemovePromo} className="bg-red-600 text-white px-4 py-2 rounded">Remove</button>
+            <button onClick={handleRemovePromo} className="bg-red-600 text-white px-4 py-2 rounded">{t("Remove", "إزالة")}</button>
           )}
         </div>
-        {promoApplied && <p className="text-green-700 mt-1">Discount: {discount.toFixed(2)} EGP</p>}
-        <p className="mt-2">Delivery Fee: {finalDeliveryFee.toFixed(2)} EGP {qualifiesForFreeDelivery && "(Free Delivery!)"}</p>
+        {promoApplied && <p className="text-green-700 mt-1">{t("Discount", "الخصم")}: {discount.toFixed(2)} EGP</p>}
+        <p className="mt-2">{t("Delivery Fee", "رسوم التوصيل")}: {finalDeliveryFee.toFixed(2)} EGP {qualifiesForFreeDelivery && `(${t("Free Delivery!", "توصيل مجاني!")})`}</p>
         <div className="flex justify-between font-semibold mt-2">
-          <span>Total:</span>
+          <span>{t("Total", "الإجمالي")}:</span>
           <span>{total.toFixed(2)} EGP</span>
         </div>
       </div>
 
       {/* PAYMENT */}
-      <div className="mb-6 border p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Payment Method</h2>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input type="radio" name="payment" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")}/>
-            Cash on Delivery
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="payment" value="InstaPay" checked={paymentMethod === "InstaPay"} onChange={() => setPaymentMethod("InstaPay")}/>
-            InstaPay
-          </label>
-        </div>
-        {paymentMethod === "InstaPay" && (
-          <div className="mt-4 p-4 bg-yellow-50 border rounded-lg">
-            <p className="mb-2">Please pay to:<br/>Phone: +20 102 715 7089<br/>Bank Account: 123-456-789-1011</p>
-            <p className="mb-2">Steps:<br/>1. Include your username in the transaction notes.<br/>2. Complete the payment.<br/>3. Send screenshot on WhatsApp.<br/>4. Enter the reference number.</p>
-            <input type="text" placeholder="Reference Number *" value={instaRef} onChange={(e) => setInstaRef(e.target.value)} className="w-full border rounded p-2"/>
-          </div>
-        )}
-      </div>
+{/* PAYMENT */}
+<div className="mb-6 border p-4 rounded-lg">
+  <h2 className="text-xl font-semibold mb-2">{t("Payment Method", "طريقة الدفع")}</h2>
+  <div className="flex gap-4">
+    <label className="flex items-center gap-2">
+      <input
+        type="radio"
+        name="payment"
+        value="COD"
+        checked={paymentMethod === "COD"}
+        onChange={() => setPaymentMethod("COD")}
+      />
+      {t("Cash on Delivery", "الدفع عند الاستلام")}
+    </label>
+    <label className="flex items-center gap-2">
+      <input
+        type="radio"
+        name="payment"
+        value="InstaPay"
+        checked={paymentMethod === "InstaPay"}
+        onChange={() => setPaymentMethod("InstaPay")}
+      />
+      InstaPay
+    </label>
+  </div>
+
+  {paymentMethod === "InstaPay" && (
+  <div className="mt-4 p-4 bg-yellow-50 border rounded-lg space-y-2 relative">
+    <p>
+      {t("Please pay to:", "يرجى الدفع إلى:")} <br />
+      Phone: +20 102 715 7089 <br />
+      Bank Account: 123-456-789-1011
+    </p>
+    <p>
+      {t("Steps:", "الخطوات:")} <br />
+      1. {t("Include your username in the transaction notes.", "قم بإدراج اسم المستخدم في ملاحظات التحويل.")}<br />
+      2. {t("Complete the payment.", "أكمل الدفع.")}<br />
+      3. {t("Send screenshot on WhatsApp.", "أرسل لقطة الشاشة عبر واتساب.")}<br />
+      4. {t("Enter the reference number.", "أدخل رقم المرجع.")}
+    </p>
+
+    {/* WhatsApp floating button */}
+    <a
+      href="https://wa.me/201027157089"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="absolute top-2 right-2 flex items-center gap-2 text-white bg-green-500 hover:bg-green-600 px-3 py-2 rounded-full shadow-lg transition-transform transform hover:scale-110"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path d="M12 0C5.373 0 0 5.372 0 12c0 2.124.557 4.106 1.523 5.828L0 24l6.276-1.514A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm6.5 16.5c-.251.706-1.518 1.345-2.091 1.422-.56.075-1.24.106-1.854-.154-.61-.26-1.478-1.08-1.818-1.457-.338-.377-1.085-1.588-1.188-1.767-.104-.178-.174-.386-.045-.63.128-.245.569-.633.762-.84.19-.205.25-.343.378-.57.128-.226.064-.426-.032-.593-.094-.166-.857-2.063-1.175-2.815-.311-.74-.63-.64-.857-.652-.224-.014-.48-.017-.737-.017-.255 0-.667.094-1.017.45-.348.356-1.32 1.287-1.32 3.133 0 1.846 1.352 3.633 1.54 3.883.188.25 2.66 4.18 6.44 5.78 3.776 1.6 3.776 1.067 4.457.998.682-.07 2.45-1.004 2.8-1.975.35-.97.35-1.803.245-1.975z" />
+      </svg>
+      WhatsApp
+    </a>
+
+    <input
+      type="text"
+      placeholder={t("Reference Number *", "رقم المرجع *")}
+      value={instaRef}
+      onChange={(e) => setInstaRef(e.target.value)}
+      className="w-full border rounded p-2"
+    />
+  </div>
+)}
+
+</div>
+
 
       <button onClick={handleOrder} disabled={loading} className="bg-amber-700 text-white px-6 py-3 rounded-full hover:bg-amber-800 disabled:bg-gray-400">
-        {loading ? "Placing Order..." : "Place Order"}
+        {loading ? t("Placing Order...", "جارٍ تقديم الطلب...") : t("Place Order", "تأكيد الطلب")}
       </button>
     </div>
   );

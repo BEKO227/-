@@ -5,7 +5,8 @@ import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import Navbar from "./components/Navbar";
 import { CartProvider } from './CartContext';
-
+import { LanguageProvider } from './LanguageContext';
+import LanguageWrapper from "./LanguageWrapper"; // <-- new wrapper
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,21 +31,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/diwani-letter" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
+          href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Inknut+Antiqua:wght@300;400;500;600;700;800;900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Pacifico&family=Righteous&display=swap"
           rel="stylesheet"
-          href="https://fonts.cdnfonts.com/css/diwani-letter"
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <AuthProvider>
-          <CartProvider>
-            <Navbar />
-            {children}
-            <Toaster position="top-center" />
-          </CartProvider>
-        </AuthProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <LanguageProvider>
+          <AuthProvider>
+            <CartProvider>
+              <LanguageWrapper> {/* Client-side wrapper */}
+                <Navbar />
+                {children}
+                <Toaster position="top-center" />
+              </LanguageWrapper>
+            </CartProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

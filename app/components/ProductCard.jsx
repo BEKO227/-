@@ -8,11 +8,14 @@ import { useAuth } from "../AuthContext";
 import { useRouter } from "next/navigation";
 import { Trash } from "lucide-react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/app/LanguageContext";
 
 export default function ProductCard({ product, small = false }) {
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
+  const { lang } = useLanguage();
+
   const [disabled, setDisabled] = useState(false);
 
   // check if product in cart
@@ -29,7 +32,7 @@ export default function ProductCard({ product, small = false }) {
       return;
     }
     addToCart(product);
-    toast.success("Product added to cart");
+    toast.success(lang === "en" ? "Product added to cart" : "تمت إضافة المنتج إلى السلة");
   };
 
   const goToDetails = () => {
@@ -43,9 +46,9 @@ export default function ProductCard({ product, small = false }) {
   };
 
   const badges = [];
-  if (product.isNewArrival) badges.push("New Arrival");
-  if (product.isTopSeller) badges.push("Top Seller");
-  if (product.isOnSale) badges.push("On Sale");
+  if (product.isNewArrival) badges.push(lang === "en" ? "New Arrival" : "أحدث");
+  if (product.isTopSeller) badges.push(lang === "en" ? "Top Seller" : "الأكثر مبيعًا");
+  if (product.isOnSale) badges.push(lang === "en" ? "On Sale" : "تخفيض");
 
   return (
     <Card
@@ -77,7 +80,7 @@ export default function ProductCard({ product, small = false }) {
 
       <CardContent className="p-4">
         <CardTitle className="text-lg font-medium text-amber-800">
-          {product.title}
+          {lang === "en" ? product.title : product.title_ar || product.title}
         </CardTitle>
 
         <p className="text-amber-700 font-semibold mt-1">
@@ -86,17 +89,17 @@ export default function ProductCard({ product, small = false }) {
 
         <p className="mt-2 text-gray-600">
           {product.stock > 0 ? (
-            <span className="text-green-600 font-bold">In Stock</span>
+            <span className="text-green-600 font-bold">
+              {lang === "en" ? "In Stock" : "متوفر"}
+            </span>
           ) : (
-            <span className="text-red-600 font-bold">Out of Stock</span>
+            <span className="text-red-600 font-bold">
+              {lang === "en" ? "Out of Stock" : "غير متوفر"}
+            </span>
           )}
         </p>
 
-        {/* ------------------------------ */}
-        {/* CART LOGIC - keeps your UI    */}
-        {/* ------------------------------ */}
         {!itemInCart ? (
-          /** Add to cart button (same UI) */
           <button
             onClick={handleAddToCart}
             disabled={disabled}
@@ -106,15 +109,15 @@ export default function ProductCard({ product, small = false }) {
                 : "bg-amber-700 hover:bg-amber-800"
             }`}
           >
-            {disabled ? "Out of Stock" : "Add to Cart"}
+            {disabled
+              ? lang === "en" ? "Out of Stock" : "غير متوفر"
+              : lang === "en" ? "Add to Cart" : "أضف إلى السلة"}
           </button>
         ) : (
-          /** Replace add-to-cart with quantity controls */
           <div
             className="mt-3 flex items-center justify-between"
-            onClick={(e) => e.stopPropagation()} // stop navigation
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* If quantity = 1 -> show trash */}
             {itemInCart.quantity === 1 ? (
               <button
                 onClick={() => removeFromCart(product.id)}
@@ -133,12 +136,8 @@ export default function ProductCard({ product, small = false }) {
               </button>
             )}
 
-            {/* Quantity */}
-            <span className="px-4 text-lg font-semibold">
-              {itemInCart.quantity}
-            </span>
+            <span className="px-4 text-lg font-semibold">{itemInCart.quantity}</span>
 
-            {/* Plus */}
             <button
               onClick={() =>
                 updateQuantity(product.id, itemInCart.quantity + 1)

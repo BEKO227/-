@@ -7,11 +7,14 @@ import { db } from "@/lib/firebase";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../../AuthContext";
+import { useLanguage } from '@/app/LanguageContext';
 
 export default function ConfirmationPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { lang } = useLanguage();
+  const t = (en, ar) => (lang === "en" ? en : ar);
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,19 +40,19 @@ export default function ConfirmationPage() {
 
           // Check ownership
           if (orderData.userId !== user.uid) {
-            toast.error("You are not authorized to view this order.");
+            toast.error(t("You are not authorized to view this order.", "ليس لديك إذن لعرض هذا الطلب"));
             router.push("/");
             return;
           }
 
           setOrder(orderData);
         } else {
-          toast.error("Order not found");
+          toast.error(t("Order not found", "الطلب غير موجود"));
           setOrder(null);
         }
       } catch (err) {
         console.error("Fetch order error:", err);
-        toast.error("Failed to fetch order");
+        toast.error(t("Failed to fetch order", "فشل في جلب الطلب"));
         setOrder(null);
       } finally {
         setLoading(false);
@@ -57,20 +60,24 @@ export default function ConfirmationPage() {
     };
 
     if (id && user) fetchOrder();
-  }, [id, user, router]);
+  }, [id, user, router, t]);
 
-  if (authLoading || loading) return <div className="p-10 text-center">Loading...</div>;
-  if (!order) return <div className="p-10 text-center text-red-600">Order not found</div>;
+  if (authLoading || loading)
+    return <div className="p-10 text-center">{t("Loading...", "جار التحميل...")}</div>;
+  if (!order)
+    return <div className="p-10 text-center text-red-600">{t("Order not found", "الطلب غير موجود")}</div>;
 
   // Safe display of full name
-  const fullName = `${order.firstName || ""} ${order.lastName || ""}`.trim() || "Customer";
+  const fullName = `${order.firstName || ""} ${order.lastName || ""}`.trim() || t("Customer", "العميل");
 
   return (
     <div className="container mx-auto px-6 py-10">
-      <h1 className="text-4xl font-bold text-amber-700 mb-6">✅ Order Confirmation</h1>
-      <p className="text-lg mb-2">Thank you for your purchase, {fullName}!</p>
+      <h1 className="text-4xl font-bold text-amber-700 mb-6">✅ {t("Order Confirmation", "تأكيد الطلب")}</h1>
+      <p className="text-lg mb-2">
+        {t("Thank you for your purchase,", "شكراً لشرائك،")} {fullName}!
+      </p>
       <p className="mb-4">
-        Order ID: <span className="font-semibold">{order.id}</span>
+        {t("Order ID:", "رقم الطلب:")} <span className="font-semibold">{order.id}</span>
       </p>
 
       {/* Order Items */}
@@ -80,8 +87,8 @@ export default function ConfirmationPage() {
             <Image src={item.imageCover} alt={item.title} width={80} height={80} className="rounded-lg" />
             <div>
               <h2 className="font-bold text-lg">{item.title}</h2>
-              <p>Quantity: {item.quantity}</p>
-              <p>Price: {(item.price * item.quantity).toFixed(2)} EGP</p>
+              <p>{t("Quantity:", "الكمية:")} {item.quantity}</p>
+              <p>{t("Price:", "السعر:")} {(item.price * item.quantity).toFixed(2)} EGP</p>
             </div>
           </div>
         ))}
@@ -89,19 +96,21 @@ export default function ConfirmationPage() {
 
       {/* Summary */}
       <div className="text-lg font-semibold mb-6">
-        <p>Subtotal: {order.subtotal.toFixed(2)} EGP</p>
-        {order.discount > 0 && <p>Discount: {order.discount.toFixed(2)} EGP</p>}
-        <p>Delivery Fee: {order.deliveryFee.toFixed(2)} EGP</p>
-        <p>Total: {order.total.toFixed(2)} EGP</p>
-        <p>Payment Method: {order.paymentMethod}</p>
-        {order.paymentMethod === "InstaPay" && <p>Reference Number: {order.referenceNumber}</p>}
+        <p>{t("Subtotal:", "المجموع الفرعي:")} {order.subtotal.toFixed(2)} EGP</p>
+        {order.discount > 0 && <p>{t("Discount:", "الخصم:")} {order.discount.toFixed(2)} EGP</p>}
+        <p>{t("Delivery Fee:", "رسوم التوصيل:")} {order.deliveryFee.toFixed(2)} EGP</p>
+        <p>{t("Total:", "الإجمالي:")} {order.total.toFixed(2)} EGP</p>
+        <p>{t("Payment Method:", "طريقة الدفع:")} {order.paymentMethod}</p>
+        {order.paymentMethod === "InstaPay" && (
+          <p>{t("Reference Number:", "رقم المرجع:")} {order.referenceNumber}</p>
+        )}
       </div>
 
       <button
         onClick={() => router.push("/")}
         className="mt-4 px-6 py-3 bg-amber-700 text-white rounded-full hover:bg-amber-800"
       >
-        Continue Shopping
+        {t("Continue Shopping", "مواصلة التسوق")}
       </button>
     </div>
   );

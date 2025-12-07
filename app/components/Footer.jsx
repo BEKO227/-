@@ -2,20 +2,28 @@
 
 import React from "react";
 import Image from "next/image";
-import { FaFacebookF, FaInstagram , FaTiktok , FaYoutube} from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
+import { useLanguage } from "../LanguageContext";
 
 export default function Footer() {
+  const { lang } = useLanguage();
+
   return (
-    <footer id="footer" className="bg-[#fdfaf8] text-brown-800 py-10 px-6">
+    <footer
+      id="footer"
+      className={`bg-[#fdfaf8] py-10 px-6 ${lang === "ar" ? "rtl font-cairo" : "ltr font-sans text-brown-800"}`}
+    >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-10">
 
         {/* Left Side: Contact & Quick Links */}
         <div className="flex flex-col md:flex-row gap-10 md:gap-20 w-full">
           {/* Contact Info */}
           <div className="flex flex-col items-start md:items-start text-center md:text-left">
-            <h2 className="font-semibold text-lg mb-3">Contact Us</h2>
-            <p className="text-sm mb-2">Phone: +20 102 715 7089 </p>
-            <p className="text-sm mb-2">Phone: +20 100 104 1499</p>
+            <h2 className="font-semibold text-lg mb-3">
+              {lang === "en" ? "Contact Us" : "تواصل معنا"}
+            </h2>
+            <p className="text-sm mb-2">{lang === "en" ? "Phone" : "هاتف"}: +20 102 715 7089</p>
+            <p className="text-sm mb-2">{lang === "en" ? "Phone" : "هاتف"}: +20 100 104 1499</p>
 
             <div className="flex gap-4 mt-2 justify-center md:justify-start">
               <a
@@ -58,21 +66,23 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h2 className="font-semibold text-lg mb-3">Quick Links</h2>
+            <h2 className="font-semibold text-lg mb-3">
+              {lang === "en" ? "Quick Links" : "روابط سريعة"}
+            </h2>
             <ul className="text-sm space-y-1">
               <li>
                 <a href="/NewArrvial" className="hover:text-brown-700 transition-colors">
-                  New Arrivals
+                  {lang === "en" ? "New Arrivals" : "الأحدث"}
                 </a>
               </li>
               <li>
                 <a href="/topsellers" className="hover:text-brown-700 transition-colors">
-                  Top Sellers
+                  {lang === "en" ? "Top Sellers" : "الأكثر مبيعًا"}
                 </a>
               </li>
               <li>
-                <a href="AllScarfs" className="hover:text-brown-700 transition-colors">
-                  All Scarfs
+                <a href="/AllScarfs" className="hover:text-brown-700 transition-colors">
+                  {lang === "en" ? "All Scarfs" : "كل الأوشحة"}
                 </a>
               </li>
             </ul>
@@ -80,7 +90,7 @@ export default function Footer() {
         </div>
 
         {/* Right Side: Logo & Brand */}
-        <div className="flex flex-col items-center md:items-end mt-6 md:mt-0">
+        <div className="flex flex-col items-center md:items-end mt-6 md:mt-0 text-center md:text-right">
           <Image
             src="/lgo.jpg"
             alt="قَمَرْ Logo"
@@ -88,35 +98,39 @@ export default function Footer() {
             height={120}
             className="mb-3 rounded-full"
           />
-          <h1 className="text-2xl font-bold text-center md:text-right"
+          <h1
+            className="text-2xl font-bold"
             style={{
               fontFamily: "'Diwani Letter', sans-serif",
               fontSize: "2rem",
               fontWeight: "bold",
               color: "#b45309",
             }}
-          >قَمَرْ</h1>
-          <p className="text-sm mt-2 text-brown-600 text-center md:text-right"
+          >
+            قَمَرْ
+          </h1>
+          <p
+            className="text-sm mt-2"
             style={{
               fontFamily: "'Diwani Letter', sans-serif",
               fontSize: "1.5rem",
               fontWeight: "bold",
             }}
           >
-            أوشحة وأغطية فاخرة، مصنوعة يدويًا من أجل الأناقة والأسلوب.
+            {lang === "en"
+              ? "Luxury scarves and wraps, handcrafted for style and elegance."
+              : "أوشحة وأغطية فاخرة، مصنوعة يدويًا من أجل الأناقة والأسلوب."}
           </p>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="mt-10 border-t border-brown-300 pt-4 text-center text-sm text-brown-600"
+      <div
+        className="mt-10 border-t border-brown-300 pt-4 text-center text-sm text-brown-600"
       >
-        &copy; {new Date().getFullYear()}
-        <p
-          style={{
-            fontFamily: "'Diwani Letter', sans-serif",
-          }}
-        > قَمَرْ.</p> All rights reserved.
+        &copy; {new Date().getFullYear()}{" "}
+        <span style={{ fontFamily: "'Diwani Letter', sans-serif" }}>قَمَرْ</span>.{" "}
+        {lang === "en" ? "All rights reserved." : "جميع الحقوق محفوظة."}
       </div>
     </footer>
   );

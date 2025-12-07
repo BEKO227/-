@@ -8,6 +8,7 @@ import AllScarfsSection from './components/AllScarf';
 import NewArrival from './components/NewArrvial';
 import Footer from './components/Footer';
 import SaleModal from './components/SaleModal';
+import { useLanguage } from "./LanguageContext";
 
 export default function Home() {
   const whatsappNumber = "+201027157089";
@@ -21,8 +22,11 @@ export default function Home() {
     setIsModalOpen(true);
   }, []);
 
+  // Language context
+  const { lang } = useLanguage();
+
   return (
-    <div className="bg-white font-sans text-brown-800 relative">
+    <div className={`bg-white relative ${lang === "ar" ? "rtl font-cairo" : "ltr font-sans text-brown-800"}`}>
       {/* Sale Modal */}
       <SaleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 

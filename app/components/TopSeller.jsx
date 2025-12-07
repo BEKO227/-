@@ -4,11 +4,13 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { allScarfs } from './../../data/products';
+import { useLanguage } from "@/app/LanguageContext";
 
-// Updated filter to match new structure
 const topSellers = allScarfs.filter((item) => item.isTopSeller === true).slice(0, 3);
 
 export default function TopSellers() {
+  const { lang } = useLanguage();
+
   return (
     <section className="py-20 bg-[#fdfaf7] relative overflow-hidden">
       <motion.h2
@@ -18,7 +20,7 @@ export default function TopSellers() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        Top Sellers
+        {lang === "ar" ? "الأكثر مبيعاً" : "Top Sellers"}
       </motion.h2>
 
       {/* Collage Layout for Desktop */}
@@ -43,12 +45,12 @@ export default function TopSellers() {
             >
               <img
                 src={item.imageCover}
-                alt={item.title}
+                alt={lang === "ar" ? item.title_ar || item.title : item.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-end justify-center">
                 <p className="text-white text-lg font-semibold mb-4 tracking-wide">
-                  {item.title}
+                  {lang === "ar" ? item.title_ar || item.title : item.title}
                 </p>
               </div>
             </MotionLink>
@@ -64,7 +66,7 @@ export default function TopSellers() {
             <MotionLink
               key={i}
               href={`/products/${item.id}`}
-              cla sName="rounded-2xl overflow-hidden shadow-md group relative"
+              className="rounded-2xl overflow-hidden shadow-md group relative"
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
@@ -72,12 +74,12 @@ export default function TopSellers() {
             >
               <img
                 src={item.imageCover}
-                alt={item.title}
+                alt={lang === "ar" ? item.title_ar || item.title : item.title}
                 className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-end justify-center">
                 <p className="text-white text-base font-medium mb-4">
-                  {item.title}
+                  {lang === "ar" ? item.title_ar || item.title : item.title}
                 </p>
               </div>
             </MotionLink>
@@ -88,8 +90,8 @@ export default function TopSellers() {
       {/* View More Button */}
       <div className="mt-6 md:mt-20 text-center">
         <Link href="/topsellers">
-          <button className="px-6 py-3 rounded-full border border-amber-900 text-amber-900 font-semibold hover:bg-coffee-700 transition-colors duration-300 cursor-pointer hover:scale-105">
-            View More
+          <button className="px-6 py-3 rounded-full border border-amber-900 text-amber-900 font-semibold hover:bg-amber-700 transition-colors duration-300 cursor-pointer hover:scale-105">
+            {lang === "ar" ? "عرض المزيد" : "View More"}
           </button>
         </Link>
       </div>

@@ -135,6 +135,7 @@
 }
 html, body {
 overflow-x: hidden;
+
 } 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out forwards;
@@ -149,4 +150,17 @@ overflow-x: hidden;
 }
 .font-diwani {
   font-family: 'Diwani Letter', sans-serif;
+}
+*{
+  font-family: "Montserrat", sans-serif;
+}
+.ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+.rtl {
+  direction: rtl;
+  text-align: right;
+  font-family: "Cairo", sans-serif; /* Arabic font */
 }
