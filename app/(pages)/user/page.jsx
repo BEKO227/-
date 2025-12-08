@@ -164,6 +164,8 @@ export default function UserDashboard() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <h1 className="text-4xl font-bold mb-8 text-gray-900">{t("My Account", "حسابي")}</h1>
+      
+      <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 
       {/* Tabs */}
       <div className="flex gap-6 border-b pb-2 mb-8">

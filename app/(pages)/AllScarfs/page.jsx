@@ -65,6 +65,7 @@ export default function AllScarfsPage() {
         <h1 className="text-3xl font-bold text-amber-900 text-center mb-10">
           {lang === "ar" ? "جميع الأوشحة" : "All Scarfs"}
         </h1>
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 
         {loading ? (
           <p className="text-center text-amber-800 text-xl">

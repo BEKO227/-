@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 import SaleBar from "./components/SaleBar";
 import TopSellers from "./components/TopSeller";
@@ -19,40 +20,75 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { lang } = useLanguage();
 
-  // Show popup on home visit
   useEffect(() => {
     setIsModalOpen(true);
   }, []);
 
   return (
     <div
-      className={`min-h-screen bg-white relative transition-all duration-300 ${
-        lang === "ar" ? "rtl font-cairo" : "ltr font-sans text-brown-900"
-      }`}
+      className={`min-h-screen bg-[#FAF7F2] relative transition-all duration-300 
+        ${lang === "ar" ? "rtl font-cairo" : "ltr font-serif text-brown-900"}`}
     >
       {/* Modal */}
       <SaleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       {/* Hero Background */}
-      <div className="absolute inset-0 bg-[url('/bg-pattern.svg')] opacity-[0.08] pointer-events-none"></div>
+      <div className="absolute inset-0 opacity-[0.06] pointer-events-none"></div>
 
-      {/* Content */}
-      <main className="space-y-20 pt-6 md:pt-10">
-        <SaleBar />
+      <main className="mx-auto">
 
-        <section className="animate-fade-in-up">
+        {/* SALE BAR */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-10"
+        >
+          <SaleBar />
+        </motion.div>
+
+        {/* NEW ARRIVALS */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="mb-14"
+        >
           <NewArrival />
-        </section>
+        </motion.section>
 
-        <section className="animate-fade-in-up delay-150">
+        {/* GOLD DIVIDER */}
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
+
+        {/* TOP SELLERS */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mb-14"
+        >
           <TopSellers />
-        </section>
+        </motion.section>
 
-        <section className="animate-fade-in-up delay-300">
+        {/* GOLD DIVIDER */}
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
+
+        {/* ALL SCARFS */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="mb-20"
+        >
           <AllScarfsSection />
-        </section>
+        </motion.section>
+
       </main>
 
+      {/* FOOTER */}
       <Footer />
 
       {/* Floating WhatsApp Button */}

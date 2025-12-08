@@ -50,6 +50,7 @@ export default function ProtectedCartPage() {
       <h1 className="text-3xl font-bold mb-6">
         {lang === "ar" ? "سلة التسوق" : "Shopping Cart"}
       </h1>
+      <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 
       {/* Free Delivery Banner */}
       {freeDeliveryLimit !== null && (

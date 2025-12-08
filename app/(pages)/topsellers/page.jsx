@@ -47,6 +47,8 @@ export default function TopSellersPage() {
         >
           {lang === "en" ? "All Top Sellers" : "جميع المنتجات الأكثر مبيعًا"}
         </motion.h1>
+        
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
           {topSellers.map((item, i) => {

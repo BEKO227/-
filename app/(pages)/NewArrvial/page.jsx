@@ -61,6 +61,8 @@ export default function NewArrivalPage() {
         <h1 className="text-3xl font-bold text-amber-800 mb-8">
           {lang === "en" ? "New Arrivals" : "أحدث المنتجات"}
         </h1>
+        
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 
         {loading ? (
           <p className="text-amber-700 text-lg">{lang === "en" ? "Loading..." : "جاري التحميل..."}</p>
