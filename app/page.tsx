@@ -1,13 +1,14 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
-import SaleBar from './components/SaleBar';
-import TopSellers from './components/TopSeller';
-import AllScarfsSection from './components/AllScarf';
-import NewArrival from './components/NewArrvial';
-import Footer from './components/Footer';
-import SaleModal from './components/SaleModal';
+import SaleBar from "./components/SaleBar";
+import TopSellers from "./components/TopSeller";
+import AllScarfsSection from "./components/AllScarf";
+import NewArrival from "./components/NewArrvial";
+import Footer from "./components/Footer";
+import SaleModal from "./components/SaleModal";
 import { useLanguage } from "./LanguageContext";
 
 export default function Home() {
@@ -16,33 +17,57 @@ export default function Home() {
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { lang } = useLanguage();
 
-  // Show modal every time the user visits home
+  // Show popup on home visit
   useEffect(() => {
     setIsModalOpen(true);
   }, []);
 
-  // Language context
-  const { lang } = useLanguage();
-
   return (
-    <div className={`bg-white relative ${lang === "ar" ? "rtl font-cairo" : "ltr font-sans text-brown-800"}`}>
-      {/* Sale Modal */}
+    <div
+      className={`min-h-screen bg-white relative transition-all duration-300 ${
+        lang === "ar" ? "rtl font-cairo" : "ltr font-sans text-brown-900"
+      }`}
+    >
+      {/* Modal */}
       <SaleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
-      {/* Page Sections */}
-      <SaleBar />
-      <NewArrival />
-      <TopSellers />
-      <AllScarfsSection />
+      {/* Hero Background */}
+      <div className="absolute inset-0 bg-[url('/bg-pattern.svg')] opacity-[0.08] pointer-events-none"></div>
+
+      {/* Content */}
+      <main className="space-y-20 pt-6 md:pt-10">
+        <SaleBar />
+
+        <section className="animate-fade-in-up">
+          <NewArrival />
+        </section>
+
+        <section className="animate-fade-in-up delay-150">
+          <TopSellers />
+        </section>
+
+        <section className="animate-fade-in-up delay-300">
+          <AllScarfsSection />
+        </section>
+      </main>
+
       <Footer />
 
-      {/* WhatsApp Button */}
+      {/* Floating WhatsApp Button */}
       <a
         href={whatsappLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-5 right-5 w-16 h-16 bg-green-500 rounded-full shadow-lg flex items-center justify-center text-white text-2xl hover:bg-green-600 transition"
+        className="
+          fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full
+          bg-green-500 shadow-xl shadow-green-700/40 
+          flex items-center justify-center text-white text-3xl 
+          hover:bg-green-600 active:scale-95 
+          transition-all duration-300 hover:shadow-2xl
+          hover:shadow-green-600/50
+        "
       >
         <FaWhatsapp />
       </a>

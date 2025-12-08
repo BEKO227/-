@@ -28,6 +28,7 @@ export default function Navbar() {
       topSellers: "Top Sellers",
       allScarfs: "All Scarves",
       contact: "Contact",
+      about: "About Us",
       login: "Login",
       logout: "Logout",
       welcome: "Welcome",
@@ -40,6 +41,7 @@ export default function Navbar() {
       topSellers: "الأكثر مبيعًا",
       allScarfs: "كل الأوشحة",
       contact: "اتصل بنا",
+      about: "من نحن",
       login: "تسجيل الدخول",
       logout: "تسجيل الخروج",
       welcome: "مرحبًا",
@@ -73,6 +75,7 @@ export default function Navbar() {
     { href: "/NewArrvial", label: t.newArrival },
     { href: "/topsellers", label: t.topSellers },
     { href: "/AllScarfs", label: t.allScarfs },
+    { href: "/AboutUs", label: t.about },
     { href: "#footer", label: t.contact },
   ];
 
@@ -83,7 +86,12 @@ export default function Navbar() {
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" width={40} height={40} alt="Logo" className="object-contain" />
-          <span className="text-xl font-semibold tracking-wide text-amber-700">{t.logo}</span>
+          <span
+            className="text-xl font-semibold tracking-wide text-amber-700"
+            style={{ fontFamily: "'Diwani Letter', sans-serif" }}
+          >
+            {t.logo}
+          </span>
         </Link>
 
         {/* DESKTOP LINKS */}
