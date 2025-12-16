@@ -44,8 +44,12 @@ export default function AllScarfsSection() {
       id="all-scarfs"
       className={`py-16 px-6 bg-[#fdfaf7] ${lang === "ar" ? "rtl font-cairo" : "ltr font-sans"}`}
     >
-      <h2 className="text-3xl font-semibold text-amber-900 text-center mb-10">
-        {lang === "en" ? "All Scarfs" : "كل الأوشحة"}
+      <h2           
+      className={`
+            text-4xl mb-6 text-center text-amber-900 font-bold
+            ${lang === "ar" ? "draw-ar" : "draw-en"}
+          `}>
+        {lang === "en" ? "All Scarves" : "كل الأوشحة"}
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">

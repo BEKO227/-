@@ -18,7 +18,6 @@ export default function ProductCard({ product, small = false }) {
 
   const [disabled, setDisabled] = useState(false);
 
-  // check if product in cart
   const itemInCart = cart.find((i) => i.id === product.id);
 
   useEffect(() => {
@@ -32,23 +31,36 @@ export default function ProductCard({ product, small = false }) {
       return;
     }
     addToCart(product);
-    toast.success(lang === "en" ? "Product added to cart" : "تمت إضافة المنتج إلى السلة");
+    toast.success(
+      lang === "en" ? "Product added to cart" : "تمت إضافة المنتج إلى السلة"
+    );
   };
 
   const goToDetails = () => {
     router.push(`/products/${product.id}`);
   };
 
-  const badgeClasses = {
-    "New Arrival": "bg-blue-500",
-    "Top Seller": "bg-green-500",
-    "On Sale": "bg-red-500",
-  };
+  /* ✅ SAFE IMAGE LOGIC */
+  const images =
+    Array.isArray(product.images) && product.images.length > 0
+      ? product.images.filter(Boolean)
+      : ["/placeholder.webp"]; // MUST exist in /public
+
+  const coverImage = images[0];
 
   const badges = [];
   if (product.isNewArrival) badges.push(lang === "en" ? "New Arrival" : "أحدث");
   if (product.isTopSeller) badges.push(lang === "en" ? "Top Seller" : "الأكثر مبيعًا");
   if (product.isOnSale) badges.push(lang === "en" ? "On Sale" : "تخفيض");
+
+  const badgeColors = {
+    "New Arrival": "bg-blue-500",
+    "أحدث": "bg-blue-500",
+    "Top Seller": "bg-green-500",
+    "الأكثر مبيعًا": "bg-green-500",
+    "On Sale": "bg-red-500",
+    "تخفيض": "bg-red-500",
+  };
 
   return (
     <Card
@@ -57,20 +69,23 @@ export default function ProductCard({ product, small = false }) {
     >
       <CardHeader className="p-0 relative">
         <div className="relative w-full h-64">
-          <Image
-            src={product.imageCover}
-            alt={product.title}
-            fill
-            className="object-cover rounded-t-2xl"
-          />
+          {coverImage && (
+            <Image
+              src={coverImage}
+              alt={product.title}
+              fill
+              className="object-cover rounded-t-2xl"
+              sizes="(max-width: 768px) 100vw, 320px"
+            />
+          )}
         </div>
 
-        {/* badges */}
+        {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {badges.map((badge) => (
             <span
               key={badge}
-              className={`text-white text-xs font-bold px-2 py-1 rounded-full ${badgeClasses[badge]}`}
+              className={`text-white text-xs font-bold px-2 py-1 rounded-full ${badgeColors[badge]}`}
             >
               {badge}
             </span>
@@ -110,8 +125,12 @@ export default function ProductCard({ product, small = false }) {
             }`}
           >
             {disabled
-              ? lang === "en" ? "Out of Stock" : "غير متوفر"
-              : lang === "en" ? "Add to Cart" : "أضف إلى السلة"}
+              ? lang === "en"
+                ? "Out of Stock"
+                : "غير متوفر"
+              : lang === "en"
+              ? "Add to Cart"
+              : "أضف إلى السلة"}
           </button>
         ) : (
           <div
@@ -136,7 +155,9 @@ export default function ProductCard({ product, small = false }) {
               </button>
             )}
 
-            <span className="px-4 text-lg font-semibold">{itemInCart.quantity}</span>
+            <span className="px-4 text-lg font-semibold">
+              {itemInCart.quantity}
+            </span>
 
             <button
               onClick={() =>

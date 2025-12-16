@@ -26,6 +26,7 @@ export default function Navbar() {
     en: {
       newArrival: "New Arrival",
       topSellers: "Top Sellers",
+      bundles: "Bundles",
       allScarfs: "All Scarves",
       contact: "Contact",
       about: "About Us",
@@ -39,6 +40,7 @@ export default function Navbar() {
     ar: {
       newArrival: "وصل حديثًا",
       topSellers: "الأكثر مبيعًا",
+      bundles: "الباقات",
       allScarfs: "كل الأوشحة",
       contact: "اتصل بنا",
       about: "من نحن",
@@ -74,6 +76,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/NewArrvial", label: t.newArrival },
     { href: "/topsellers", label: t.topSellers },
+    { href: "/Bundles", label: t.bundles },
     { href: "/AllScarfs", label: t.allScarfs },
     { href: "/AboutUs", label: t.about },
     { href: "#footer", label: t.contact },

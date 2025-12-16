@@ -29,7 +29,9 @@ export default function NewArrival() {
       const scarves = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data.isNewArrival) scarves.push({ id: doc.id, ...data });
+        if (data.isNewArrival) {
+          scarves.push({ id: doc.id, ...data });
+        }
       });
       setNewArrivals(scarves);
       setLoading(false);
@@ -49,9 +51,16 @@ export default function NewArrival() {
   return (
     <section
       id="new-arrivals"
-      className={`relative w-full ${lang === "ar" ? "rtl font-cairo" : "ltr"}`}
+      className={`relative w-full ${
+        lang === "ar" ? "rtl font-cairo" : "ltr"
+      }`}
     >
-      <h2 className="text-3xl font-semibold text-amber-900 text-center m-5">
+      <h2
+        className={`
+          text-4xl mb-6 text-center text-amber-900 font-bold
+          ${lang === "ar" ? "draw-ar" : "draw-en"}
+        `}
+      >
         {lang === "en" ? "New Arrivals" : "الأحدث"}
       </h2>
 
@@ -62,27 +71,43 @@ export default function NewArrival() {
         onMouseLeave={autoplay.current.reset}
       >
         <CarouselContent className="w-full">
-          {newArrivals.map((scarf, index) => (
-            <CarouselItem key={index} className="w-full">
-              <Link href={`/products/${scarf.id}`}>
-                <div className="relative w-full h-[80vh] flex flex-col justify-center items-center cursor-pointer">
-                  <img
-                    src={scarf.imageCover}
-                    alt={scarf.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="relative z-10 bg-black/40 px-6 py-3 rounded-lg">
-                    <h2 className="text-white text-4xl font-semibold">
-                      {lang === "en" ? scarf.title : scarf.title_ar || scarf.title}
-                    </h2>
+          {newArrivals.map((scarf) => {
+            // ✅ SAFE IMAGE LOGIC
+            const images =
+              Array.isArray(scarf.images) && scarf.images.length > 0
+                ? scarf.images.filter(Boolean)
+                : ["/placeholder.webp"];
+
+            const coverImage = images[0];
+
+            return (
+              <CarouselItem key={scarf.id} className="w-full">
+                <Link href={`/products/${scarf.id}`}>
+                  <div className="relative w-full h-[80vh] flex flex-col justify-center items-center cursor-pointer">
+                    {coverImage && (
+                      <img
+                        src={coverImage}
+                        alt={scarf.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
+
+                    <div className="relative z-10 bg-black/40 px-6 py-3 rounded-lg">
+                      <h2 className="text-white text-4xl font-semibold">
+                        {lang === "en"
+                          ? scarf.title
+                          : scarf.title_ar || scarf.title}
+                      </h2>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </CarouselItem>
-          ))}
+                </Link>
+              </CarouselItem>
+            );
+          })}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-6 top-1/2 -translate-y-1/2 bg-black/40 text-white hover:bg-black hover:text-white px-4 py-2 rounded-full transition cursor-pointer" />
-        <CarouselNext className="absolute right-6 top-1/2 -translate-y-1/2 bg-black/40 text-white hover:bg-black hover:text-white px-4 py-2 rounded-full transition cursor-pointer" />
+
+        <CarouselPrevious className="absolute left-6 top-1/2 -translate-y-1/2 bg-black/40 text-white hover:bg-black px-4 py-2 rounded-full transition cursor-pointer" />
+        <CarouselNext className="absolute right-6 top-1/2 -translate-y-1/2 bg-black/40 text-white hover:bg-black px-4 py-2 rounded-full transition cursor-pointer" />
       </Carousel>
     </section>
   );

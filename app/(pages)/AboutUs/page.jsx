@@ -16,8 +16,10 @@ export default function About() {
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center text-4xl md:text-5xl font-light tracking-wide text-[#5C3A29]"
-      >
+        className={`
+          text-4xl mb-6 text-center text-amber-900
+          ${lang === "ar" ? "draw-ar" : "draw-en"}
+        `}      >
         {lang === "ar" ? "من نحن – قَمَرْ" : "About Us – Qamar"}
       </motion.h1>
 

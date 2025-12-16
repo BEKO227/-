@@ -12,13 +12,38 @@ export default function AllScarfsPage() {
   const { lang } = useLanguage();
   const [scarves, setScarves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
+  // Define categories
+  const categories = [
+    { key: "all", en: "All", ar: "الكل" },
+    { key: "kuwaiti_design1", en: "Kuwaiti Design 1", ar: "كويتي رسمة 1" },
+    { key: "kuwaiti-design2", en: "Kuwaiti Design 2", ar: "كويتي رسمة 2" },
+    { key: "thiland", en: "Thiland", ar: "تايلاندي" },
+    { key: "dirty-linen", en: "Dirty Linen", ar: "كتان متسخ" },
+    { key: "plain", en: "Plain", ar: "سادة" },
+    { key: "chiffon", en: "Chiffon", ar: "شيفون" },
+    { key: "cotton", en: "Cotton", ar: "قطن" },
+    { key: "lycra-cotton", en: "Lycra Cotton", ar: "قطن ليكرا" },
+    { key: "printed-modal", en: "Printed Modal", ar: "مودال مطبوع" },
+    { key: "modal", en: "Modal", ar: "مودال" },
+    { key: "packet", en: "Packet", ar: "بنادانا باكت" },
+    { key: "bandana", en: "Bandana", ar: "بنادانا" },
+  ];
+
+  // Fetch scarves from Firestore
   useEffect(() => {
     async function fetchScarves() {
       const querySnapshot = await getDocs(collection(db, "scarves"));
       const fetchedScarves = [];
       querySnapshot.forEach((doc) => {
-        fetchedScarves.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        // Normalize category: lowercase + trim
+        fetchedScarves.push({ 
+          id: doc.id, 
+          ...data, 
+          category: (data.category || "uncategorized").trim().toLowerCase()
+        });
       });
       setScarves(fetchedScarves);
       setLoading(false);
@@ -36,10 +61,17 @@ export default function AllScarfsPage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
+  // Filter scarves based on selected category
+  const filteredScarves = scarves.filter(product =>
+    selectedCategory === "all"
+      ? true
+      : (product.category || "").trim().toLowerCase() === selectedCategory
+  );
+
   return (
     <>
       {/* Navbar */}
-      <div className="w-full bg-[#fdfaf7] py-2 shadow-md">
+      <div className="w-full bg-[#fdfaf7] py-1 shadow-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <Link
             href="/"
@@ -62,23 +94,53 @@ export default function AllScarfsPage() {
 
       {/* Scarves Section */}
       <section className="py-16 px-6 bg-[#fdfaf7] min-h-screen">
-        <h1 className="text-3xl font-bold text-amber-900 text-center mb-10">
-          {lang === "ar" ? "جميع الأوشحة" : "All Scarfs"}
+        <h1  className={`
+            text-4xl mb-6 text-center text-amber-900 font-bold
+            ${lang === "ar" ? "draw-ar" : "draw-en"}
+          `}>
+          {lang === "ar" ? "جميع الأوشحة" : "All Scarves"}
         </h1>
+
+        {/* Categories Filter Bar */}
+        <div className="flex flex-wrap justify-center gap-3 overflow-x-auto py-2 mb-8 scrollbar-hide">
+          {categories.map((cat) => (
+            <button
+              key={cat.key}
+              onClick={() => setSelectedCategory(cat.key)}
+              className={`
+                px-5 py-2 rounded-full border
+                ${selectedCategory === cat.key
+                  ? "bg-[#D4AF37] text-white border-[#D4AF37]"
+                  : "border-[#D4AF37] text-amber-900"}
+                hover:bg-[#D4AF37] hover:text-white
+                transition-all duration-300 whitespace-nowrap
+                min-w-[100px]
+              `}
+            >
+              {lang === "ar" ? cat.ar : cat.en}
+            </button>
+          ))}
+        </div>
+
         <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 
         {loading ? (
           <p className="text-center text-amber-800 text-xl">
             {lang === "ar" ? "جاري تحميل الأوشحة..." : "Loading scarfs..."}
           </p>
+        ) : filteredScarves.length === 0 ? (
+          <p className="text-center text-amber-800 text-xl">
+            {lang === "ar" ? "لا توجد أوشحة لهذه الفئة" : "No scarves in this category"}
+          </p>
         ) : (
           <motion.div
+            key={selectedCategory}   // ✅ FORCE RE-ANIMATION
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            {scarves.map((product) => (
+            {filteredScarves.map((product) => (
               <motion.div key={product.id} variants={cardVariants}>
                 <ProductCard product={product} small={true} />
               </motion.div>

@@ -47,7 +47,10 @@ export default function ProtectedCartPage() {
 
   return (
     <div className={`max-w-6xl mx-auto px-6 py-10 ${lang === "ar" ? "rtl text-right" : "ltr text-left"}`}>
-      <h1 className="text-3xl font-bold mb-6">
+      <h1           className={`
+            text-4xl mb-6 text-center text-amber-900
+            ${lang === "ar" ? "draw-ar" : "draw-en"}
+          `}>
         {lang === "ar" ? "سلة التسوق" : "Shopping Cart"}
       </h1>
       <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />

@@ -164,3 +164,13 @@ overflow-x: hidden;
   text-align: right;
   font-family: "Cairo", sans-serif; /* Arabic font */
 }
+.draw-en {
+  font-family: var(--font-draw-en), cursive;
+}
+
+.draw-ar {
+  font-family: var(--font-draw-ar), cursive;
+}
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
