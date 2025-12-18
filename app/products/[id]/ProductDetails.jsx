@@ -18,11 +18,15 @@ export default function ProductDetails({ id }) {
   const [userRating, setUserRating] = useState(0);
   const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [isImageOpen, setIsImageOpen] = useState(false);
 
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
   const { lang } = useLanguage();
+
+  // 🔁 Translation helper
+  const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
   const itemInCart = scarf
     ? cart.find((i) => String(i.id) === String(scarf.id))
@@ -51,55 +55,6 @@ export default function ProductDetails({ id }) {
   useEffect(() => {
     fetchScarf();
   }, [id]);
-
-  const handleAddToCart = async (e) => {
-    e?.stopPropagation();
-    if (!user) return router.push("/auth/signin");
-    if (!scarf) return;
-    if (scarf.stock <= 0)
-      return toast.error(lang === "en" ? "Out of stock" : "نفذ المخزون");
-
-    try {
-      const docRef = doc(db, "scarves", String(scarf.id));
-      await updateDoc(docRef, { stock: scarf.stock - 1 });
-      addToCart(scarf);
-      toast.success(
-        lang === "en"
-          ? "Product added successfully!"
-          : "تمت إضافة المنتج بنجاح!"
-      );
-      await fetchScarf();
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error(
-        lang === "en" ? "Something went wrong!" : "حدث خطأ ما!"
-      );
-    }
-  };
-
-  const submitRating = async () => {
-    if (!user) return router.push("/auth/signin");
-    if (userRating < 1 || userRating > 5) return;
-
-    setRatingSubmitting(true);
-    try {
-      const docRef = doc(db, "scarves", scarf.id);
-      const newAvg =
-        (scarf.ratingsAverage * scarf.ratingsQuantity + userRating) /
-        (scarf.ratingsQuantity + 1);
-
-      await updateDoc(docRef, {
-        ratingsAverage: newAvg,
-        ratingsQuantity: (scarf.ratingsQuantity || 0) + 1,
-      });
-
-      setUserRating(0);
-      await fetchScarf();
-    } catch (err) {
-      console.error(err);
-    }
-    setRatingSubmitting(false);
-  };
 
   if (loading)
     return (
@@ -130,14 +85,11 @@ export default function ProductDetails({ id }) {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <Link
             href="/"
-            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors"
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700"
           >
             🏚️
           </Link>
-          <div
-            className="text-2xl font-bold text-amber-700"
-            style={{ fontFamily: "'Diwani Letter', sans-serif" }}
-          >
+          <div className="text-2xl font-bold text-amber-700">
             قَمَرْ
           </div>
         </div>
@@ -147,32 +99,17 @@ export default function ProductDetails({ id }) {
       <div className="container mx-auto px-6 md:px-20 py-10 flex flex-col md:flex-row gap-12">
         {/* Images */}
         <div className="flex-1">
-          <div className="relative">
+          <div
+            className="relative cursor-zoom-in"
+            onClick={() => setIsImageOpen(true)}
+          >
             <Image
               src={images[activeImage]}
-              alt={scarf.title}
+              alt={getText(scarf.title, scarf.titleAr)}
               width={450}
               height={450}
               className="rounded-xl shadow-lg object-cover"
             />
-
-            <div className="absolute top-3 left-3 flex flex-col gap-1">
-              {scarf.isNewArrival && (
-                <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {lang === "en" ? "New Arrival" : "وصول جديد"}
-                </span>
-              )}
-              {scarf.isTopSeller && (
-                <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {lang === "en" ? "Top Seller" : "الأكثر مبيعًا"}
-                </span>
-              )}
-              {scarf.isOnSale && (
-                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {lang === "en" ? "On Sale" : "خصم"}
-                </span>
-              )}
-            </div>
           </div>
 
           {images.length > 1 && (
@@ -189,7 +126,7 @@ export default function ProductDetails({ id }) {
                 >
                   <Image
                     src={img}
-                    alt={`Thumbnail ${index + 1}`}
+                    alt="thumbnail"
                     width={80}
                     height={80}
                     className="rounded-md object-cover"
@@ -202,26 +139,73 @@ export default function ProductDetails({ id }) {
 
         {/* Details */}
         <div className="flex-1 flex flex-col justify-center">
+
+
+          {/* Title */}
           <h1 className="text-4xl font-bold text-amber-800 mb-4">
-            {lang === "en" ? scarf.title : scarf.titleAr || scarf.title}
+            {getText(scarf.title, scarf.titleAr)}
           </h1>
 
+          {/* Category */}
+          {scarf.category && (
+            <span className="inline-block mb-3 px-4 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+              {getText(scarf.category, scarf.categoryAr)}
+            </span>
+          )}
+
+          {/* Description */}
           <p className="text-gray-700 leading-relaxed mb-4">
-            {lang === "en"
-              ? scarf.description
-              : scarf.descriptionAr || scarf.description}
+            {getText(scarf.description, scarf.descriptionAr)}
           </p>
 
-          <p className="text-2xl font-semibold text-amber-700 mb-2">
+          {/* 🔔 Disclaimer */}
+          <div className="mt-6 p-4 border rounded-xl bg-amber-50 text-sm text-gray-700 leading-relaxed">
+            {lang === "en" ? (
+              <>
+                <p>
+                  Please note that product colors may appear slightly different
+                  due to lighting, screen resolution, and photography.
+                </p>
+                <p className="mt-2">
+                  Minor variations in texture or shade are normal and do not
+                  affect the quality or authenticity of the product.
+                </p>
+                <p className="mt-3 font-semibold text-amber-800">
+                  All items are original La Voile products, carefully selected
+                  to meet high quality standards.
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  يرجى ملاحظة أن ألوان المنتجات قد تبدو مختلفة قليلاً بسبب
+                  الإضاءة، دقة الشاشة، والتصوير.
+                </p>
+                <p className="mt-2">
+                  الاختلافات البسيطة في الملمس أو درجة اللون طبيعية ولا تؤثر
+                  على جودة أو أصالة المنتج.
+                </p>
+                <p className="mt-3 font-semibold text-amber-800">
+                  جميع المنتجات أصلية من La Voile وتم اختيارها بعناية لتلبية
+                  أعلى معايير الجودة.
+                </p>
+              </>
+            )}
+          </div>
+
+          {/* Price */}
+          <p className="text-2xl font-semibold text-amber-700 mt-6 mb-2">
             {scarf.price} EGP
           </p>
 
+          {/* Rating */}
           <p className="text-lg text-gray-700 mb-2">
             ⭐ {(scarf.ratingsAverage || 0).toFixed(1)} (
             {scarf.ratingsQuantity || 0}{" "}
             {lang === "en" ? "reviews" : "تقييم"})
           </p>
 
+          {/* Stock */}
           <div className="mb-4">
             {scarf.stock > 0 ? (
               <span className="text-green-600 font-bold">
@@ -234,9 +218,10 @@ export default function ProductDetails({ id }) {
             )}
           </div>
 
+          {/* Cart Actions */}
           {!itemInCart ? (
             <button
-              onClick={handleAddToCart}
+              onClick={() => addToCart(scarf)}
               disabled={disabled}
               className={`w-full py-3 rounded-full font-semibold text-white ${
                 disabled
@@ -284,52 +269,24 @@ export default function ProductDetails({ id }) {
               </button>
             </div>
           )}
-
-          {scarf.styleVideo && (
-            <Link
-              href={`/products/${scarf.id}/style`}
-              className="mt-4 bg-amber-800 text-white px-6 py-3 rounded-full font-semibold hover:bg-amber-700 text-center"
-            >
-              {lang === "en" ? "How to Style" : "كيفية التنسيق"}
-            </Link>
-          )}
-
-          {/* Rating */}
-          <div className="mt-8 p-4 border rounded-xl bg-white shadow-sm">
-            <h3 className="text-xl font-bold text-amber-800 mb-2">
-              {lang === "en" ? "Rate This Product" : "قيم هذا المنتج"}
-            </h3>
-            <div className="flex gap-2 text-3xl cursor-pointer mb-3">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  onClick={() => setUserRating(star)}
-                  className={
-                    star <= userRating
-                      ? "text-yellow-500"
-                      : "text-gray-400"
-                  }
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            <button
-              onClick={submitRating}
-              disabled={ratingSubmitting || userRating === 0}
-              className="px-6 py-2 bg-amber-700 text-white rounded-full hover:bg-amber-800 disabled:bg-gray-400"
-            >
-              {ratingSubmitting
-                ? lang === "en"
-                  ? "Submitting..."
-                  : "جاري الإرسال..."
-                : lang === "en"
-                ? "Submit Rating"
-                : "إرسال التقييم"}
-            </button>
-          </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {isImageOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+          onClick={() => setIsImageOpen(false)}
+        >
+          <Image
+            src={images[activeImage]}
+            alt="Full Image"
+            width={900}
+            height={900}
+            className="rounded-xl object-contain max-h-[90vh]"
+          />
+        </div>
+      )}
     </>
   );
 }

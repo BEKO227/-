@@ -88,7 +88,7 @@ export default function TopSellers() {
                   {lang === "ar" ? item.title_ar || item.title : item.title}
                 </p>
                 <p className="text-white font-medium text-sm mb-1">
-                  {lang === "ar" ? "السعر" : "Price"}: ${item.price}
+                  {lang === "ar" ? "السعر" : "Price"}: {item.price} EGP
                 </p>
                 <p className="text-white font-medium text-sm mb-2">
                   {lang === "ar" ? "المخزون" : "Stock"}: {item.stock}
@@ -127,7 +127,7 @@ export default function TopSellers() {
                 {lang === "ar" ? item.title_ar || item.title : item.title}
               </p>
               <p className="text-white font-medium text-sm mb-1">
-                {lang === "ar" ? "السعر" : "Price"}: ${item.price}
+                {lang === "ar" ? "السعر" : "Price"}: {item.price} EGP
               </p>
               <p className="text-white font-medium text-sm mb-2">
                 {lang === "ar" ? "المخزون" : "Stock"}: {item.stock}

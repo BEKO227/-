@@ -19,6 +19,8 @@ export default function ProductCard({ product, small = false }) {
   const [disabled, setDisabled] = useState(false);
 
   const itemInCart = cart.find((i) => i.id === product.id);
+  const getText = (en, ar) => (lang === "ar" ? ar || en : en);
+
 
   useEffect(() => {
     setDisabled(product.stock <= 0);
@@ -97,6 +99,13 @@ export default function ProductCard({ product, small = false }) {
         <CardTitle className="text-lg font-medium text-amber-800">
           {lang === "en" ? product.title : product.title_ar || product.title}
         </CardTitle>
+
+                  {/* Category */}
+          {product.category && (
+            <span className="inline-block mb-3 px-4 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+              {getText(product.category, product.categoryAr)}
+            </span>
+          )}
 
         <p className="text-amber-700 font-semibold mt-1">
           {product.price} EGP

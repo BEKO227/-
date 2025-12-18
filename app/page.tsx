@@ -11,7 +11,6 @@ import NewArrival from "./components/NewArrvial";
 import Footer from "./components/Footer";
 import SaleModal from "./components/SaleModal";
 import { useLanguage } from "./LanguageContext";
-import Categories from './components/Categories';
 import HomeBundles from './components/Bundles';
 
 export default function Home() {
@@ -77,23 +76,6 @@ export default function Home() {
           <TopSellers />
         </motion.section>
         
-
-        {/* GOLD DIVIDER */}
-        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
-
-        {/* CATEGORIES */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="mb-14"
-        >
-
-        <Categories
-
-        />
-        </motion.section>        
 
         <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 

@@ -63,7 +63,7 @@ export default function Footer() {
         {/* Right Side: Logo & Brand */}
         <div className="flex flex-col items-center md:items-end text-right">
           <Image
-            src="/lgo.jpg"
+            src="/circle_logo.png"
             alt="قَمَرْ Logo"
             width={120}
             height={120}
@@ -77,7 +77,7 @@ export default function Footer() {
               fontFamily: "'Diwani Letter', sans-serif",
               fontSize: "2rem",
               fontWeight: "bold",
-              color: "#b45309",
+              color: "#FFD700",
             }}
           >
             قَمَرْ
