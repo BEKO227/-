@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import SaleModal from "./components/SaleModal";
 import { useLanguage } from "./LanguageContext";
 import HomeBundles from './components/Bundles';
+import HomeCategories from './components/Categories';
 
 export default function Home() {
   const whatsappNumber = "+201027157089";
@@ -76,6 +77,20 @@ export default function Home() {
           <TopSellers />
         </motion.section>
         
+                {/* GOLD DIVIDER */}
+        <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
+        
+
+        {/* TOP SELLERS */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mb-14"
+        >
+          <HomeCategories/>
+        </motion.section>
 
         <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
 

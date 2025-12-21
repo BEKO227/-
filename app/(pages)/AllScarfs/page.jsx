@@ -20,15 +20,15 @@ export default function AllScarfsPage() {
     { key: "kuwaiti_design1", en: "Kuwaiti Design 1", ar: "كويتي رسمة 1" },
     { key: "kuwaiti-design2", en: "Kuwaiti Design 2", ar: "كويتي رسمة 2" },
     { key: "thiland", en: "Thiland", ar: "تايلاندي" },
-    { key: "dirty-linen", en: "Dirty Linen", ar: "كتان متسخ" },
-    { key: "plain", en: "Plain", ar: "سادة" },
     { key: "chiffon", en: "Chiffon", ar: "شيفون" },
-    { key: "cotton", en: "Cotton", ar: "قطن" },
-    { key: "lycra-cotton", en: "Lycra Cotton", ar: "قطن ليكرا" },
     { key: "printed-modal", en: "Printed Modal", ar: "مودال مطبوع" },
     { key: "modal", en: "Modal", ar: "مودال" },
     { key: "packet", en: "Packet", ar: "بنادانا باكت" },
     { key: "bandana", en: "Bandana", ar: "بنادانا" },
+    { key: "dirty-linen", en: "Dirty Linen", ar: "كتان متسخ" },
+    { key: "plain", en: "Plain", ar: "سادة" },
+    { key: "cotton", en: "Cotton", ar: "قطن" },
+    { key: "lycra-cotton", en: "Lycra Cotton", ar: "قطن ليكرا" },
   ];
 
   // Fetch scarves from Firestore
@@ -38,7 +38,6 @@ export default function AllScarfsPage() {
       const fetchedScarves = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Normalize category: lowercase + trim
         fetchedScarves.push({ 
           id: doc.id, 
           ...data, 
@@ -101,25 +100,19 @@ export default function AllScarfsPage() {
           {lang === "ar" ? "جميع الأوشحة" : "All Scarves"}
         </h1>
 
-        {/* Categories Filter Bar */}
-        <div className="flex flex-wrap justify-center gap-3 overflow-x-auto py-2 mb-8 scrollbar-hide">
-          {categories.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => setSelectedCategory(cat.key)}
-              className={`
-                px-5 py-2 rounded-full border
-                ${selectedCategory === cat.key
-                  ? "bg-[#D4AF37] text-white border-[#D4AF37]"
-                  : "border-[#D4AF37] text-amber-900"}
-                hover:bg-[#D4AF37] hover:text-white
-                transition-all duration-300 whitespace-nowrap
-                min-w-[100px]
-              `}
-            >
-              {lang === "ar" ? cat.ar : cat.en}
-            </button>
-          ))}
+        {/* Categories Filter - Dropdown */}
+        <div className="flex justify-center mb-8">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 border border-[#D4AF37] rounded-lg text-amber-900 font-semibold bg-white hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
+          >
+            {categories.map((cat) => (
+              <option key={cat.key} value={cat.key}>
+                {lang === "ar" ? cat.ar : cat.en}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
