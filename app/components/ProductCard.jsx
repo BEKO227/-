@@ -21,7 +21,6 @@ export default function ProductCard({ product, small = false }) {
   const itemInCart = cart.find((i) => i.id === product.id);
   const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
-
   useEffect(() => {
     setDisabled(product.stock <= 0);
   }, [product.stock]);
@@ -46,7 +45,7 @@ export default function ProductCard({ product, small = false }) {
   const images =
     Array.isArray(product.images) && product.images.length > 0
       ? product.images.filter(Boolean)
-      : ["/placeholder.webp"]; // MUST exist in /public
+      : ["/placeholder.webp"];
 
   const coverImage = images[0];
 
@@ -96,21 +95,31 @@ export default function ProductCard({ product, small = false }) {
       </CardHeader>
 
       <CardContent className="p-4">
+        {/* Title */}
         <CardTitle className="text-lg font-medium text-amber-800">
           {lang === "en" ? product.title : product.title_ar || product.title}
         </CardTitle>
 
-                  {/* Category */}
-          {product.category && (
-            <span className="inline-block mb-3 px-4 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
-              {getText(product.category, product.categoryAr)}
-            </span>
-          )}
+        {/* Brand */}
+        {product.brand && (
+          <p className="text-sm text-gray-500 mt-1 font-medium">
+            {getText(product.brand, product.brand_ar)}
+          </p>
+        )}
 
+        {/* Category */}
+        {product.category && (
+          <span className="inline-block mt-3 mb-2 px-4 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+            {getText(product.category, product.categoryAr)}
+          </span>
+        )}
+
+        {/* Price */}
         <p className="text-amber-700 font-semibold mt-1">
           {product.price} EGP
         </p>
 
+        {/* Stock */}
         <p className="mt-2 text-gray-600">
           {product.stock > 0 ? (
             <span className="text-green-600 font-bold">
@@ -123,11 +132,12 @@ export default function ProductCard({ product, small = false }) {
           )}
         </p>
 
+        {/* Cart Actions */}
         {!itemInCart ? (
           <button
             onClick={handleAddToCart}
             disabled={disabled}
-            className={`mt-2 w-full py-2 rounded-full font-semibold text-white ${
+            className={`mt-3 w-full py-2 rounded-full font-semibold text-white ${
               disabled
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-amber-700 hover:bg-amber-800"
@@ -143,7 +153,7 @@ export default function ProductCard({ product, small = false }) {
           </button>
         ) : (
           <div
-            className="mt-3 flex items-center justify-between"
+            className="mt-4 flex items-center justify-between"
             onClick={(e) => e.stopPropagation()}
           >
             {itemInCart.quantity === 1 ? (
