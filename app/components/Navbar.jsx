@@ -90,7 +90,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <Image src="/circle_logo.png" width={40} height={40} alt="Logo" className="object-contain" />
           <span
-            className="text-xl font-semibold tracking-wide text-amber-700"
+            className="text-xl font-semibold tracking-wide text-black"
             style={{ fontFamily: "'Diwani Letter', sans-serif" }}
           >
             {t.logo}

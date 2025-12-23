@@ -22,21 +22,21 @@ export default function Footer() {
             <p className="text-sm mb-2">Phone: +20 100 104 1499</p>
 
             <div className="flex gap-4 mt-2">
-              <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+              {/* <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
                 <FaFacebookF size={30} />
-              </a>
+              </a> */}
 
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-700">
+              <a href="https://www.instagram.com/qamar_scarves/" target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-700">
                 <FaInstagram size={30} />
               </a>
 
-              <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" className="text-black hover:opacity-70">
+              <a href="https://www.tiktok.com/@qamar.scarves" target="_blank" rel="noopener noreferrer" className="text-black hover:opacity-70">
                 <FaTiktok size={30} />
               </a>
-
+{/* 
               <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-800">
                 <FaYoutube size={30} />
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -69,19 +69,6 @@ export default function Footer() {
             height={120}
             className="mb-3 rounded-full"
           />
-
-          {/* Arabic Brand Name */}
-          <h1
-            className="text-2xl font-bold"
-            style={{
-              fontFamily: "'Diwani Letter', sans-serif",
-              fontSize: "2rem",
-              fontWeight: "bold",
-              color: "#FFD700",
-            }}
-          >
-            قَمَرْ
-          </h1>
 
           {/* Arabic Slogan */}
           <p

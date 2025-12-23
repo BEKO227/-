@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useCart } from "../../CartContext";
 import { useAuth } from "../../AuthContext";
 import { useRouter } from "next/navigation";
@@ -15,9 +15,8 @@ import { useLanguage } from "@/app/LanguageContext";
 export default function ProductDetails({ id }) {
   const [scarf, setScarf] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userRating, setUserRating] = useState(0);
-  const [ratingSubmitting, setRatingSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [isImageOpen, setIsImageOpen] = useState(false);
 
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
@@ -25,7 +24,6 @@ export default function ProductDetails({ id }) {
   const router = useRouter();
   const { lang } = useLanguage();
 
-  // 🔁 Translation helper
   const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
   const itemInCart = scarf
@@ -39,8 +37,15 @@ export default function ProductDetails({ id }) {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        setScarf({ id: docSnap.id, ...docSnap.data() });
-        setActiveImage(0);
+        const data = { id: docSnap.id, ...docSnap.data() };
+        setScarf(data);
+
+        if (data.colors && data.colors.length > 0) {
+          setSelectedColor(data.colors[0]);
+          setActiveImage(data.colors[0].image);
+        } else if (data.images && data.images.length > 0) {
+          setActiveImage(0);
+        }
       } else {
         setScarf(null);
       }
@@ -89,9 +94,7 @@ export default function ProductDetails({ id }) {
           >
             🏚️
           </Link>
-          <div className="text-2xl font-bold text-amber-700">
-            قَمَرْ
-          </div>
+          <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
         </div>
       </div>
 
@@ -139,8 +142,6 @@ export default function ProductDetails({ id }) {
 
         {/* Details */}
         <div className="flex-1 flex flex-col justify-center">
-
-
           {/* Title */}
           <h1 className="text-4xl font-bold text-amber-800 mb-4">
             {getText(scarf.title, scarf.titleAr)}
@@ -158,43 +159,30 @@ export default function ProductDetails({ id }) {
             {getText(scarf.description, scarf.descriptionAr)}
           </p>
 
-          {/* 🔔 Disclaimer */}
-          <div className="mt-6 p-4 border rounded-xl bg-amber-50 text-sm text-gray-700 leading-relaxed">
-            {lang === "en" ? (
-              <>
-                <p>
-                  Please note that product colors may appear slightly different
-                  due to lighting, screen resolution, and photography.
-                </p>
-                <p className="mt-2">
-                  Minor variations in texture or shade are normal and do not
-                  affect the quality or authenticity of the product.
-                </p>
-                <p className="mt-3 font-semibold text-amber-800">
-                  All items are original La Voile products, carefully selected
-                  to meet high quality standards.
-                </p>
-              </>
-            ) : (
-              <>
-                <p>
-                  يرجى ملاحظة أن ألوان المنتجات قد تبدو مختلفة قليلاً بسبب
-                  الإضاءة، دقة الشاشة، والتصوير.
-                </p>
-                <p className="mt-2">
-                  الاختلافات البسيطة في الملمس أو درجة اللون طبيعية ولا تؤثر
-                  على جودة أو أصالة المنتج.
-                </p>
-                <p className="mt-3 font-semibold text-amber-800">
-                  جميع المنتجات أصلية من La Voile وتم اختيارها بعناية لتلبية
-                  أعلى معايير الجودة.
-                </p>
-              </>
-            )}
-          </div>
+          {/* Color Selector */}
+          {scarf.colors && scarf.colors.length > 0 && (
+            <div className="flex gap-3 mt-4 mb-4">
+              {scarf.colors.map((color, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedColor(color);
+                    setActiveImage(color.image);
+                  }}
+                  className={`w-8 h-8 rounded-full border-2 ${
+                    selectedColor?.name === color.name
+                      ? "border-amber-700"
+                      : "border-gray-300"
+                  }`}
+                  style={{ backgroundColor: color.hex }}
+                  title={color.name}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Price */}
-          <p className="text-2xl font-semibold text-amber-700 mt-6 mb-2">
+          <p className="text-2xl font-semibold text-amber-700 mt-2 mb-2">
             {scarf.price} EGP
           </p>
 
