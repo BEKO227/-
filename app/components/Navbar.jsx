@@ -18,10 +18,8 @@ export default function Navbar() {
   const { cart } = useCart();
   const totalCartItems = cart?.length || 0;
 
-  // Language
   const { lang, toggleLang } = useLanguage();
 
-  // Translations
   const translations = {
     en: {
       newArrival: "New Arrival",
@@ -55,7 +53,6 @@ export default function Navbar() {
 
   const t = translations[lang];
 
-  // Fetch user name
   useEffect(() => {
     const fetchName = async () => {
       if (!user?.uid) return;
@@ -64,7 +61,7 @@ export default function Navbar() {
         const snap = await getDoc(ref);
         if (snap.exists()) {
           const data = snap.data();
-          setUserName((data.firstName || "") + " " + (data.lastName || ""));
+          setUserName(`${data.firstName || ""} ${data.lastName || ""}`.trim());
         }
       } catch (error) {
         console.log("Error fetching user name:", error);
@@ -83,14 +80,20 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <nav className="w-full sticky top-0 z-50 bg-linear-to-r from-amber-50 via-white to-amber-50 shadow-md backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* LOGO */}
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/circle_logo.png" width={40} height={40} alt="Logo" className="object-contain" />
+        <Link href="/" className="flex items-center gap-1">
+          <Image
+            src="/circle_logo.png"
+            width={45}
+            height={45}
+            alt="Logo"
+            className="rounded-full border border-amber-200 shadow-sm"
+          />
           <span
-            className="text-xl font-semibold tracking-wide text-black"
+            className="text-xl font-bold text-amber-800 tracking-wide"
             style={{ fontFamily: "'Diwani Letter', sans-serif" }}
           >
             {t.logo}
@@ -98,10 +101,15 @@ export default function Navbar() {
         </Link>
 
         {/* DESKTOP LINKS */}
-        <div className="hidden md:flex gap-8 text-sm font-medium">
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium">
           {navLinks.map((link, i) => (
-            <Link key={i} href={link.href} className="hover:text-gray-700 transition font-medium">
+            <Link
+              key={i}
+              href={link.href}
+              className="relative px-2 py-1 rounded-lg hover:text-white hover:bg-amber-700 transition-all duration-300"
+            >
               {link.label}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full"></span>
             </Link>
           ))}
         </div>
@@ -111,24 +119,27 @@ export default function Navbar() {
           {/* Language Toggle */}
           <button
             onClick={toggleLang}
-            className="px-3 py-1 border rounded text-sm hover:bg-gray-100"
+            className="px-3 py-1 border border-amber-300 rounded-lg text-sm font-medium text-amber-800 hover:bg-amber-700 hover:text-white transition"
           >
             {t.switch}
           </button>
 
           {/* User Greeting */}
           {user && (
-            <Link href="/user" className="hidden md:block text-sm text-gray-700 hover:text-black">
-              {t.welcome}, <span className="font-semibold underline">{userName}</span>
+            <Link
+              href="/user"
+              className="hidden md:block text-sm text-amber-900 font-medium hover:underline"
+            >
+              {t.welcome}, <span className="font-semibold">{userName}</span>
             </Link>
           )}
 
           {/* Cart */}
           {user && (
             <Link href="/Cart" className="relative">
-              <ShoppingBag className="w-6 h-6 hover:text-gray-700 cursor-pointer" />
+              <ShoppingBag className="w-6 h-6 text-amber-800 hover:text-amber-700 transition" />
               {totalCartItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse shadow">
                   {totalCartItems}
                 </span>
               )}
@@ -139,72 +150,68 @@ export default function Navbar() {
           {user ? (
             <button
               onClick={logout}
-              className="flex items-center gap-1 text-sm text-gray-700 hover:text-black"
+              className="flex items-center gap-1 text-sm text-amber-800 font-medium hover:text-amber-700 transition"
             >
               <LogOut className="w-5 h-5" />
               {t.logout}
             </button>
           ) : (
-            <Link href="/auth/signin" className="flex items-center gap-1 text-sm">
-              <User className="w-6 h-6 hover:text-gray-700 cursor-pointer" />
+            <Link
+              href="/auth/signin"
+              className="flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-700 transition"
+            >
+              <User className="w-6 h-6" />
               {t.login}
             </Link>
           )}
 
           {/* Mobile Menu Toggle */}
-          <button className="md:hidden" onClick={() => setOpen(!open)}>
-            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button className="md:hidden p-2 rounded hover:bg-amber-100" onClick={() => setOpen(!open)}>
+            {open ? <X className="w-6 h-6 text-amber-800" /> : <Menu className="w-6 h-6 text-amber-800" />}
           </button>
         </div>
       </div>
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden bg-white border-t shadow-sm animate-slideDown">
-          <div className="flex flex-col px-6 py-4 gap-4 text-sm font-medium">
-            {/* Language Toggle */}
+        <div className="md:hidden bg-white border-t shadow-lg animate-slideDown p-6 flex flex-col gap-4 text-sm font-medium">
+          <button
+            onClick={toggleLang}
+            className="px-3 py-1 border rounded-lg w-max text-amber-800 hover:bg-amber-700 hover:text-white transition"
+          >
+            {t.switch}
+          </button>
+
+          {user && (
+            <Link href="/user" onClick={() => setOpen(false)} className="text-amber-900 font-medium underline">
+              {t.welcome}, {userName}
+            </Link>
+          )}
+
+          {navLinks.map((link, i) => (
+            <Link key={i} href={link.href} onClick={() => setOpen(false)} className="hover:text-amber-700 transition">
+              {link.label}
+            </Link>
+          ))}
+
+          {user && (
+            <Link href="/Cart" onClick={() => setOpen(false)} className="hover:text-amber-700 transition">
+              {t.cart} ({totalCartItems})
+            </Link>
+          )}
+
+          {user ? (
             <button
-              onClick={toggleLang}
-              className="px-3 py-1 border rounded text-sm w-max"
+              onClick={() => { logout(); setOpen(false); }}
+              className="text-red-600 font-medium"
             >
-              {t.switch}
+              {t.logout}
             </button>
-
-            {/* User Greeting */}
-            {user && (
-              <Link href="/user" onClick={() => setOpen(false)} className="text-gray-700 mb-2 underline">
-                {t.welcome}, {userName}
-              </Link>
-            )}
-
-            {/* Navigation Links */}
-            {navLinks.map((link, i) => (
-              <Link key={i} href={link.href} onClick={() => setOpen(false)}>
-                {link.label}
-              </Link>
-            ))}
-
-            {/* Cart */}
-            {user && (
-              <Link href="/Cart" onClick={() => setOpen(false)}>
-                {t.cart} ({totalCartItems})
-              </Link>
-            )}
-
-            {/* Login / Logout */}
-            {user ? (
-              <button
-                onClick={() => { logout(); setOpen(false); }}
-                className="text-left text-red-600"
-              >
-                {t.logout}
-              </button>
-            ) : (
-              <Link href="/auth/signin" onClick={() => setOpen(false)}>
-                {t.login}
-              </Link>
-            )}
-          </div>
+          ) : (
+            <Link href="/auth/signin" onClick={() => setOpen(false)} className="text-amber-800 font-medium hover:text-amber-700 transition">
+              {t.login}
+            </Link>
+          )}
         </div>
       )}
     </nav>

@@ -42,7 +42,7 @@ export default function ProductDetails({ id }) {
 
         if (data.colors && data.colors.length > 0) {
           setSelectedColor(data.colors[0]);
-          setActiveImage(data.colors[0].image);
+          setActiveImage(0);
         } else if (data.images && data.images.length > 0) {
           setActiveImage(0);
         }
@@ -90,7 +90,7 @@ export default function ProductDetails({ id }) {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <Link
             href="/"
-            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700"
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 hover:text-white transition"
           >
             🏚️
           </Link>
@@ -103,27 +103,28 @@ export default function ProductDetails({ id }) {
         {/* Images */}
         <div className="flex-1">
           <div
-            className="relative cursor-zoom-in"
+            className="relative cursor-zoom-in rounded-2xl overflow-hidden shadow-lg"
             onClick={() => setIsImageOpen(true)}
           >
             <Image
               src={images[activeImage]}
               alt={getText(scarf.title, scarf.titleAr)}
-              width={450}
-              height={450}
-              className="rounded-xl shadow-lg object-cover"
+              width={500}
+              height={500}
+              className="rounded-2xl object-cover transition-transform duration-500 hover:scale-105"
             />
           </div>
 
+          {/* Thumbnails */}
           {images.length > 1 && (
             <div className="flex gap-3 mt-4 justify-center">
               {images.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImage(index)}
-                  className={`border rounded-lg p-1 ${
+                  className={`border rounded-lg p-1 transition ${
                     activeImage === index
-                      ? "border-amber-700"
+                      ? "border-amber-700 shadow-lg"
                       : "border-gray-300"
                   }`}
                 >
@@ -141,23 +142,57 @@ export default function ProductDetails({ id }) {
         </div>
 
         {/* Details */}
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="flex-1 flex flex-col justify-center gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg">
           {/* Title */}
-          <h1 className="text-4xl font-bold text-amber-800 mb-4">
+          <h1 className="text-4xl font-bold text-amber-800 mb-2">
             {getText(scarf.title, scarf.titleAr)}
           </h1>
 
           {/* Category */}
           {scarf.category && (
-            <span className="inline-block mb-3 px-4 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+            <span
+              className="
+                inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-semibold
+                bg-linear-to-r from-amber-400 via-amber-300 to-amber-500
+                text-white shadow-lg border border-amber-300
+                uppercase tracking-wide
+                transition-transform duration-300 hover:scale-105
+              "
+            >
               {getText(scarf.category, scarf.categoryAr)}
             </span>
+
+
           )}
 
           {/* Description */}
           <p className="text-gray-700 leading-relaxed mb-4">
             {getText(scarf.description, scarf.descriptionAr)}
           </p>
+
+          {/* Product Disclaimer */}
+          <div className="mt-4 p-4 rounded-2xl bg-linear-to-r from-amber-50 to-amber-100 shadow-md border border-amber-200">
+            <div className="flex items-start gap-3">
+              <span className="text-amber-700 font-bold text-lg">⚠️</span>
+              <div className="text-gray-700 text-sm space-y-2 leading-relaxed">
+                <p>
+                  {lang === "en"
+                    ? "Please note that product colors may appear slightly different due to lighting, screen resolution, and photography."
+                    : "يرجى ملاحظة أن ألوان المنتج قد تبدو مختلفة قليلاً بسبب الإضاءة ودقة الشاشة والتصوير."}
+                </p>
+                <p>
+                  {lang === "en"
+                    ? "Minor variations in texture or shade are normal and do not affect the quality or authenticity of the product."
+                    : "الاختلافات الطفيفة في الملمس أو اللون طبيعية ولا تؤثر على جودة أو أصالة المنتج."}
+                </p>
+                <p className="font-semibold">
+                  {lang === "en"
+                    ? "All items are original La Voile products, carefully selected to meet high quality standards."
+                    : "جميع المنتجات أصلية من La Voile، تم اختيارها بعناية لتلبية معايير الجودة العالية."}
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Color Selector */}
           {scarf.colors && scarf.colors.length > 0 && (
@@ -167,11 +202,11 @@ export default function ProductDetails({ id }) {
                   key={index}
                   onClick={() => {
                     setSelectedColor(color);
-                    setActiveImage(color.image);
+                    setActiveImage(index);
                   }}
-                  className={`w-8 h-8 rounded-full border-2 ${
+                  className={`w-8 h-8 rounded-full border-2 transition ${
                     selectedColor?.name === color.name
-                      ? "border-amber-700"
+                      ? "border-amber-700 shadow-md"
                       : "border-gray-300"
                   }`}
                   style={{ backgroundColor: color.hex }}
@@ -196,11 +231,11 @@ export default function ProductDetails({ id }) {
           {/* Stock */}
           <div className="mb-4">
             {scarf.stock > 0 ? (
-              <span className="text-green-600 font-bold">
+              <span className="text-green-600 font-bold px-3 py-1 rounded-full bg-green-50 border border-green-200">
                 {lang === "en" ? "In Stock" : "متوفر"}
               </span>
             ) : (
-              <span className="text-red-600 font-bold">
+              <span className="text-red-600 font-bold px-3 py-1 rounded-full bg-red-50 border border-red-200">
                 {lang === "en" ? "Out of Stock" : "نفذ المخزون"}
               </span>
             )}
@@ -211,16 +246,20 @@ export default function ProductDetails({ id }) {
             <button
               onClick={() => addToCart(scarf)}
               disabled={disabled}
-              className={`w-full py-3 rounded-full font-semibold text-white ${
-                disabled
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-amber-700 hover:bg-amber-800"
-              }`}
+              className={`
+                mt-3 w-full py-2 rounded-full text-[16px] font-semibold text-white
+                transition-all duration-300
+                ${
+                  disabled
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow"
+                }
+              `}
             >
               {disabled
                 ? lang === "en"
                   ? "Out of Stock"
-                  : "نفذ المخزون"
+                  : "غير متوفر"
                 : lang === "en"
                 ? "Add to Cart"
                 : "أضف إلى السلة"}
@@ -230,7 +269,7 @@ export default function ProductDetails({ id }) {
               {itemInCart.quantity === 1 ? (
                 <button
                   onClick={() => removeFromCart(scarf.id)}
-                  className="p-2 bg-red-500 text-white rounded-full"
+                  className="p-2 bg-red-500 text-white rounded-full shadow-lg transition"
                 >
                   <Trash size={18} />
                 </button>
@@ -239,7 +278,7 @@ export default function ProductDetails({ id }) {
                   onClick={() =>
                     updateQuantity(scarf.id, itemInCart.quantity - 1)
                   }
-                  className="px-4 py-2 bg-gray-200 rounded-full font-bold"
+                  className="px-4 py-2 bg-gray-200 rounded-full font-bold shadow-sm transition"
                 >
                   -
                 </button>
@@ -251,7 +290,7 @@ export default function ProductDetails({ id }) {
                 onClick={() =>
                   updateQuantity(scarf.id, itemInCart.quantity + 1)
                 }
-                className="px-4 py-2 bg-gray-200 rounded-full font-bold"
+                className="px-4 py-2 bg-gray-200 rounded-full font-bold shadow-sm transition"
               >
                 +
               </button>

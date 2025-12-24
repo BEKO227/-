@@ -13,7 +13,6 @@ export default function TopSellersPage() {
   const [topSellers, setTopSellers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch top sellers from Firestore
   useEffect(() => {
     async function fetchTopSellers() {
       const querySnapshot = await getDocs(collection(db, "scarves"));
@@ -28,34 +27,29 @@ export default function TopSellersPage() {
     fetchTopSellers();
   }, []);
 
-  // Framer Motion variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+    visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
   };
   const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
 
   return (
     <>
       {/* Navbar */}
-      <div className="w-full bg-[#fdfaf7] py-2 shadow-md">
+      <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <Link
             href="/"
-            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors"
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors duration-300"
           >
             🏚️
           </Link>
           <div
-            className="text-2xl font-bold text-amber-700"
-            style={{
-              fontFamily: "'Diwani Letter', sans-serif",
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-            }}
+            className="text-2xl text-amber-700"
+            style={{ fontFamily: "'Diwani Letter', sans-serif" }}
           >
             قَمَرْ
           </div>
@@ -63,16 +57,14 @@ export default function TopSellersPage() {
       </div>
 
       {/* Top Sellers Section */}
-      <section className="py-20 px-4 bg-[#fdfaf7] min-h-screen">
+      <section className="py-24 px-6 bg-linear-to-b from-[#fdfaf7] to-[#fff9f2] min-h-screen">
         <h1
-          className={`text-4xl mb-6 text-center text-amber-900 font-bold ${
+          className={`text-4xl mb-12 text-center font-extrabold text-amber-900 tracking-wide ${
             lang === "ar" ? "draw-ar" : "draw-en"
           }`}
         >
           {lang === "ar" ? "الأكثر مبيعًا" : "Top Sellers"}
         </h1>
-
-        <div className="w-full h-px my-12 bg-linear-to-r from-transparent via-[#D4AF37] to-transparent" />
 
         {loading ? (
           <p className="text-center text-amber-800 text-xl">
@@ -84,53 +76,67 @@ export default function TopSellersPage() {
           </p>
         ) : (
           <motion.div
-            className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+            className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            {topSellers.map((item, i) => (
+            {topSellers.map((item) => (
               <motion.div key={item.id} variants={cardVariants}>
                 <MotionLink
                   href={`/products/${item.id}`}
-                  className="rounded-2xl overflow-hidden shadow-lg group relative"
+                  className="group relative rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-transform duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-lg"
                 >
                   {/* Product Image */}
-                  <img
-                    src={item.images?.[0] || "/placeholder.jpg"}
-                    alt={lang === "ar" ? item.title_ar || item.title : item.title}
-                    className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                  />
+                  <div className="relative w-full h-72 overflow-hidden rounded-t-3xl">
+                    <img
+                      src={item.images?.[0] || "/placeholder.jpg"}
+                      alt={lang === "ar" ? item.title_ar || item.title : item.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/50 z-10" />
+                  </div>
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex flex-col justify-end items-center p-4">
-                    <p className="text-white text-lg font-semibold mb-1 text-center">
-                      {lang === "ar" ? item.title_ar || item.title : item.title}
-                    </p>
-                    <p className="text-white font-medium text-sm mb-1">
-                      {lang === "ar" ? "السعر" : "Price"}: ${item.price}
-                    </p>
-                    <p className="text-white font-medium text-sm mb-1">
-                      {lang === "ar" ? "المخزون" : "Stock"}: {item.stock}
-                    </p>
+                  {/* Badges */}
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-2 z-20">
+                    {item.isTopSeller && (
+                      <span className="px-3 py-1 text-xs font-semibold text-white rounded-full shadow-lg bg-linear-to-r from-amber-400 to-amber-600">
+                        {lang === "ar" ? "الأكثر مبيعًا" : "Top Seller"}
+                      </span>
+                    )}
                     {item.isNewArrival && (
-                      <span className="bg-amber-600 text-white text-xs px-2 py-1 rounded-full mb-1">
+                      <span className="px-3 py-1 text-xs font-semibold text-white rounded-full shadow-lg bg-linear-to-r from-blue-400 to-blue-600">
                         {lang === "ar" ? "وصول جديد" : "New Arrival"}
                       </span>
                     )}
-                    <div className="flex items-center space-x-1 mt-1">
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-5">
+                    <h3 className="text-xl font-serif text-amber-900 leading-snug mb-2">
+                      {lang === "ar" ? item.title_ar || item.title : item.title}
+                    </h3>
+                    <p className="text-lg text-amber-700 font-bold mb-2">
+                      ${item.price}
+                    </p>
+                    <p className="text-gray-500 text-sm mb-3">
+                      {lang === "ar" ? "المخزون" : "Stock"}: {item.stock}
+                    </p>
+                    <div className="flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, idx) => (
                         <span
                           key={idx}
-                          className={`text-yellow-400 ${
-                            idx < Math.round(item.ratingsAverage) ? "" : "text-gray-300"
+                          className={`transition-colors duration-300 ${
+                            idx < Math.round(item.ratingsAverage)
+                              ? "text-yellow-400 hover:text-yellow-500"
+                              : "text-gray-300"
                           }`}
                         >
                           ★
                         </span>
                       ))}
-                      <span className="text-white text-xs ml-1">({item.ratingsQuantity})</span>
+                      <span className="text-gray-400 text-xs ml-1">({item.ratingsQuantity})</span>
                     </div>
                   </div>
                 </MotionLink>

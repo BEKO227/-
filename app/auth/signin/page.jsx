@@ -5,12 +5,12 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/aut
 import { auth } from "@/lib/firebase";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react"; // Install lucide-react if not installed
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Signin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // <-- new state
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
@@ -33,7 +33,7 @@ export default function Signin() {
     try {
       await sendPasswordResetEmail(auth, email, {
         url: "https://qamar-scarves.vercel.app/auth/signin",
-        handleCodeInApp: true
+        handleCodeInApp: true,
       });
       toast.success("Password reset email sent! Check your inbox.");
     } catch (err) {
@@ -43,10 +43,16 @@ export default function Signin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fdfaf7]">
-      <div className="bg-white p-10 rounded-3xl shadow-lg w-full max-w-md border border-amber-200">
+    <div className="min-h-screen flex items-center justify-center bg-[#fdfaf7] px-4">
+      <div className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md border border-amber-200">
         <div className="flex justify-center mb-6">
-          <Image src="/lgo.jpg" alt="Qamar Scarves" width={80} height={80} className="rounded-full" />
+          <Image
+            src="/circle_logo.png"
+            alt="Qamar Scarves"
+            width={80}
+            height={80}
+            className="rounded-full"
+          />
         </div>
 
         <h1 className="text-3xl font-bold text-amber-800 text-center mb-6">Sign In</h1>
@@ -60,17 +66,17 @@ export default function Signin() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="border border-amber-300 rounded-xl p-4 w-full text-lg"
+            className="border border-amber-300 rounded-xl p-4 w-full text-lg focus:ring-2 focus:ring-amber-400 transition"
           />
 
           <div className="relative">
             <input
-              type={showPassword ? "text" : "password"} // toggle type
+              type={showPassword ? "text" : "password"}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="border border-amber-300 rounded-xl p-4 w-full text-lg pr-12"
+              className="border border-amber-300 rounded-xl p-4 w-full text-lg pr-12 focus:ring-2 focus:ring-amber-400 transition"
             />
             <button
               type="button"
@@ -83,7 +89,11 @@ export default function Signin() {
 
           <button
             type="submit"
-            className="bg-amber-700 hover:bg-amber-800 text-white font-semibold w-full py-4 rounded-xl text-lg mt-2"
+            className={`
+              w-full py-4 rounded-xl text-lg font-semibold text-white
+              transition-all duration-300 shadow-lg
+              bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90
+            `}
           >
             Sign In
           </button>

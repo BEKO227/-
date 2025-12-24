@@ -143,10 +143,28 @@ export default function TopSellers() {
       </div>
 
       {/* View More Button */}
-      <div className="mt-6 md:mt-20 text-center">
-        <Link href="/topsellers">
-          <button className="px-6 py-3 rounded-full border border-amber-900 text-amber-900 font-semibold hover:bg-amber-700 transition-colors duration-300 cursor-pointer hover:scale-105">
-            {lang === "ar" ? "عرض المزيد" : "View More"}
+      <div className="mt-10 text-center">
+      <Link href="/topsellers" className="inline-block">
+      <button
+            className="
+              px-7 py-3.5 rounded-full
+              font-semibold
+              border border-amber-900
+              text-amber-900
+              bg-white
+
+              shadow-[0_6px_18px_rgba(0,0,0,0.06)]
+              hover:shadow-[0_10px_28px_rgba(0,0,0,0.10)]
+
+              hover:bg-linear-to-r hover:from-amber-700 hover:to-amber-900
+              hover:text-white
+
+              transition-all duration-300 ease-out
+              hover:scale-105 active:scale-95
+              focus:outline-none focus:ring-2 focus:ring-amber-500/50
+            "
+          >
+            {lang === "en" ? "View More" : "عرض المزيد"}
           </button>
         </Link>
       </div>

@@ -105,7 +105,7 @@ export default function AllScarfsPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 border border-[#D4AF37] rounded-lg text-amber-900 font-semibold bg-white hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
+            className="px-4 py-2 border border-[#D4AF37] rounded-lg text-amber-900 font-semibold bg-white transition-all duration-300"
           >
             {categories.map((cat) => (
               <option key={cat.key} value={cat.key}>
@@ -128,7 +128,7 @@ export default function AllScarfsPage() {
         ) : (
           <motion.div
             key={selectedCategory}   // ✅ FORCE RE-ANIMATION
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"

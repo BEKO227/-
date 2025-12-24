@@ -83,10 +83,10 @@ export default function NewArrival() {
             return (
               <CarouselItem key={scarf.id} className="w-full">
                 <Link href={`/products/${scarf.id}`}>
-                  <div className="relative w-full h-[80vh] flex flex-col justify-center items-center cursor-pointer">
+                  <div className="relative w-full h-[80vh] flex flex-col justify-center items-center cursor-pointer overflow-hidden rounded-2xl">
                     {coverImage && (
                       <img
-                        src={coverImage}
+                        src={images[0]}
                         alt={scarf.title}
                         className="absolute inset-0 w-full h-full object-cover"
                       />

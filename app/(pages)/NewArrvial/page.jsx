@@ -36,31 +36,29 @@ export default function NewArrivalPage() {
     fetchNewArrivals();
   }, []);
 
-  /* Animations */
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 25 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
 
   return (
     <>
       {/* Top Bar */}
-      <div className="w-full bg-[#fdfaf7] py-2 shadow-sm">
+      <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <Link
             href="/"
             className="py-2 px-4 border border-amber-800/30 rounded-full
                        text-amber-900 hover:bg-amber-800 hover:text-white
-                       transition-all"
+                       transition-all duration-300"
           >
             🏚️
           </Link>
-
           <div
             className="text-2xl font-bold text-amber-700"
             style={{ fontFamily: "'Diwani Letter', sans-serif" }}
@@ -71,11 +69,11 @@ export default function NewArrivalPage() {
       </div>
 
       {/* Page Content */}
-      <section className="max-w-6xl mx-auto px-4 py-12">
+      <section className="max-w-7xl mx-auto px-4 py-16">
         {/* Title */}
         <h1
           className={`
-            text-4xl mb-6 text-center text-amber-900
+            text-5xl mb-8 text-center text-amber-900 font-extrabold
             ${lang === "ar" ? "draw-ar" : "draw-en"}
           `}
         >
@@ -98,14 +96,14 @@ export default function NewArrivalPage() {
           </p>
         ) : (
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             {newArrivals.map((product) => (
               <motion.div key={product.id} variants={cardVariants}>
-                <ProductCard product={product} />
+                  <ProductCard product={product} premium />
               </motion.div>
             ))}
           </motion.div>

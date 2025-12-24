@@ -27,7 +27,7 @@ export default function AllScarfsSection() {
   }, []);
 
   // Take only the first 4 scarves for preview
-  const topScarfs = scarfs.slice(0, 4);
+  const topScarfs = scarfs.slice(0, 6);
 
   if (loading) {
     return (
@@ -52,7 +52,7 @@ export default function AllScarfsSection() {
         {lang === "en" ? "All Scarves" : "كل الأوشحة"}
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {topScarfs.map((scarf, index) => (
           <ProductCard key={`${scarf.id}-${index}`} product={scarf} small={true} />
         ))}
@@ -60,12 +60,31 @@ export default function AllScarfsSection() {
 
       {/* View More Button */}
       <div className="mt-10 text-center">
-        <Link href="/AllScarfs">
-          <button className="px-6 py-3 rounded-full border border-amber-900 text-amber-900 font-semibold hover:bg-amber-700 hover:text-white transition-colors duration-300 cursor-pointer hover:scale-105">
+        <Link href="/AllScarfs" className="inline-block">
+          <button
+            className="
+              px-7 py-3.5 rounded-full
+              font-semibold
+              border border-amber-900
+              text-amber-900
+              bg-white
+
+              shadow-[0_6px_18px_rgba(0,0,0,0.06)]
+              hover:shadow-[0_10px_28px_rgba(0,0,0,0.10)]
+
+              hover:bg-linear-to-r hover:from-amber-700 hover:to-amber-900
+              hover:text-white
+
+              transition-all duration-300 ease-out
+              hover:scale-105 active:scale-95
+              focus:outline-none focus:ring-2 focus:ring-amber-500/50
+            "
+          >
             {lang === "en" ? "View More" : "عرض المزيد"}
           </button>
         </Link>
       </div>
+
     </section>
   );
 }

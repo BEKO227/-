@@ -19,8 +19,9 @@ export default function About() {
         className={`
           text-4xl mb-6 text-center text-amber-900
           ${lang === "ar" ? "draw-ar" : "draw-en"}
-        `}      >
-        {lang === "ar" ? "من نحن – قَمَرْ" : "About Us – Qamar"}
+        `}
+      >
+        {lang === "ar" ? "من نحن – قَمَرْ" : "About Us – Qamar Scarves"}
       </motion.h1>
 
       {/* GOLD DIVIDER */}
@@ -55,23 +56,19 @@ export default function About() {
         >
           {lang === "ar" ? (
             <p className="space-y-5">
-              <span className="text-3xl font-bold font-diwani text-[#C59C6F]">قَمَرْ</span>  
-              هي علامة متخصصة في الأوشحة الفاخرة التي تجمع بين الأصالة العربية
-              وروح الأناقة العصرية.  
-              كل قطعة تُصنع بعناية فائقة، بخامات مختارة لتمنحك إحساسًا بالترف والراحة.
+              <span className="text-3xl font-bold text-[#C59C6F] font-diwani">قَمَرْ</span>  
+              هي منصة متخصصة في تقديم أفضل الماركات الفاخرة للأوشحة بأسعار تنافسية.  
+              نحن نحرص على اختيار منتجات عالية الجودة لتمنحكِ الفخامة والراحة دون التضحية بالقيمة.  
               <br /><br />
-              تأسست قَمَرْ بهدف تقديم أوشحة تحمل جمال البساطة وروح الفخامة،  
-              لتكون جزءًا من هوية كل امرأة تبحث عن الذوق الرفيع.
+              كل قطعة في مجموعتنا تم اختيارها بعناية لتوفر لكِ تشكيلة متنوعة من التصاميم التي تناسب كل الأذواق والمناسبات.
             </p>
           ) : (
             <p className="space-y-5">
-              <span className="text-3xl font-semibold text-[#C59C6F]">Qamar</span>  
-              is a luxury scarf brand blending timeless Arabic elegance with modern design.  
-              Each scarf is crafted with exceptional care, using premium materials that feel
-              soft, elegant, and effortlessly refined.
+              <span className="text-3xl font-semibold text-[#C59C6F]">Qamar Scarves</span>  
+              is a premium reseller of high-quality scarf brands, offering competitive prices.  
+              We carefully select each piece to ensure luxury, comfort, and exceptional value.  
               <br /><br />
-              Qamar was founded to offer pieces that represent beauty, delicacy, and
-              sophistication — a perfect reflection of the woman who wears them.
+              Our collection features a wide range of styles and designs, perfect for every taste and occasion.
             </p>
           )}
         </motion.div>
@@ -90,17 +87,17 @@ export default function About() {
         >
           {lang === "ar" ? (
             <p className="space-y-5">
-              في <span className="text-3xl font-bold font-diwani text-[#C59C6F]">قَمَرْ</span>، نؤمن أن الأوشحة أكثر من مجرد قطعة تُرتدى،
-              إنها لغة تعبير، ولمسة جمال تضيف لمعانًا خاصًا لإطلالتك.
+              في <span className="text-3xl font-bold text-[#C59C6F] font-diwani">قَمَرْ</span>، نؤمن أن الأوشحة هي لمسة تكميلية أساسية لكل إطلالة.  
+              نحن نقدم لكِ منتجات مختارة بعناية لتعكس ذوقكِ الشخصي وتضيف لمسة فخمة لكل مناسبة.  
               <br /><br />
-              نعمل على تقديم منتجات تعكس ذوقك، شخصيتك، وتفاصيلك الراقية.
+              هدفنا هو توفير تشكيلة عالية الجودة بأسعار تنافسية، مع تجربة تسوق مريحة وسهلة لكل عملائنا.
             </p>
           ) : (
             <p className="space-y-5">
-              At Qamar, we believe scarves are not just accessories —
-              they are a language of elegance and an expression of individuality.
+              At Qamar, we believe scarves are a key accessory for every look.  
+              We offer carefully curated products that reflect your personal style and add a touch of luxury to any occasion.  
               <br /><br />
-              Our mission is to create pieces that blend luxury, beauty, and identity.
+              Our mission is to provide high-quality scarves at competitive prices, delivering a smooth and premium shopping experience to all our customers.
             </p>
           )}
         </motion.div>
@@ -143,8 +140,8 @@ export default function About() {
 
         <p className="mt-6 text-lg md:text-xl text-[#4A3728] leading-relaxed">
           {lang === "ar"
-            ? "أن نجعل كل امرأة تتألق عبر لمسات بسيطة تحمل معنى ورُقي."
-            : "To bring elegance and meaning into every woman’s life through beautifully crafted pieces."}
+            ? "تقديم أوشحة عالية الجودة من أفضل الماركات بأسعار تنافسية مع تجربة تسوق مميزة وسهلة."
+            : "To provide high-quality scarves from top brands at competitive prices, with a premium and seamless shopping experience."}
         </p>
       </motion.div>
 

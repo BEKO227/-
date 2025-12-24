@@ -162,80 +162,79 @@ export default function UserDashboard() {
   if (!user) return <p className="p-10 text-center text-gray-600">{t("Please sign in to access your dashboard.", "يرجى تسجيل الدخول للوصول إلى حسابك")}</p>;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <h1           className={`
-            text-4xl mb-6 text-center text-amber-900 font-bold
-            ${lang === "ar" ? "draw-ar" : "draw-en"}
-          `}>{t("My Account", "حسابي")}</h1>
-      
-      <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
+<div className="max-w-4xl mx-auto px-6 py-12">
+  <h1 className={`text-4xl mb-8 text-center text-amber-900 font-bold ${lang === "ar" ? "draw-ar" : "draw-en"}`}>
+    {t("My Account", "حسابي")}
+  </h1>
 
-      {/* Tabs */}
-      <div className="flex gap-6 border-b pb-2 mb-8">
-        {["profile", "orders", "promos"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-2 capitalize text-lg font-medium transition ${
-              activeTab === tab
-                ? "text-amber-700 border-b-2 border-amber-700"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab === "profile" ? t("Profile", "الملف الشخصي") : tab === "orders" ? t("Orders", "الطلبات") : t("Promos", "الرموز")}
-          </button>
-        ))}
+  <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
+
+  {/* Tabs */}
+  <div className="flex gap-6 border-b pb-2 mb-8 justify-center flex-wrap">
+    {["profile", "orders", "promos"].map((tab) => (
+      <button
+        key={tab}
+        onClick={() => setActiveTab(tab)}
+        className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+          activeTab === tab
+            ? "bg-amber-700/20 text-amber-900 shadow-lg"
+            : "text-gray-500 hover:text-amber-700"
+        }`}
+      >
+        {tab === "profile" ? t("Profile", "الملف الشخصي") : tab === "orders" ? t("Orders", "الطلبات") : t("Promos", "الرموز")}
+      </button>
+    ))}
+  </div>
+
+  {/* PROFILE */}
+  {activeTab === "profile" && (
+    <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-6 transition-all duration-500">
+      <h2 className="text-xl font-semibold mb-6 text-amber-800">{t("Profile Information", "معلومات الملف الشخصي")}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" placeholder={t("First Name", "الاسم الأول")} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full border rounded-lg p-3 focus:ring-amber-300 focus:ring-2 transition" />
+        <input type="text" placeholder={t("Last Name", "الاسم الأخير")} value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full border rounded-lg p-3 focus:ring-amber-300 focus:ring-2 transition" />
+        <input type="text" placeholder={t("Phone", "الهاتف")} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded-lg p-3 focus:ring-amber-300 focus:ring-2 transition" />
+        <input type="text" placeholder={t("Address", "العنوان")} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full border rounded-lg p-3 focus:ring-amber-300 focus:ring-2 transition" />
       </div>
+      <button
+        onClick={handleProfileUpdate}
+        className={`
+          mt-6 w-full py-2 rounded-full text-[13px] font-semibold text-white
+          transition-all duration-300
+          bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow
+        `}
+      >
+        {t("Save Changes", "حفظ التغييرات")}
+      </button>
+    </div>
+  )}
 
-      {/* PROFILE */}
-      {activeTab === "profile" && (
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">{t("Profile Information", "معلومات الملف الشخصي")}</h2>
+  {/* ORDERS */}
+  {activeTab === "orders" && (
+    <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-6 transition-all duration-500">
+      <h2 className="text-xl font-semibold mb-6 text-amber-800">{t("Order History", "تاريخ الطلبات")}</h2>
+      {orders.length === 0 ? <p className="text-gray-600">{t("You have no orders yet.", "لا يوجد لديك طلبات بعد")}</p> : orders.map((order) => <OrderItem key={order.id} order={order} t={t} />)}
+    </div>
+  )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" placeholder={t("First Name", "الاسم الأول")} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full border rounded-lg p-3" />
-            <input type="text" placeholder={t("Last Name", "الاسم الأخير")} value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full border rounded-lg p-3" />
-            <input type="text" placeholder={t("Phone", "الهاتف")} value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border rounded-lg p-3" />
-            <input type="text" placeholder={t("Address", "العنوان")} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full border rounded-lg p-3" />
+  {/* PROMOS */}
+  {activeTab === "promos" && (
+    <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-6 transition-all duration-500">
+      <h2 className="text-xl font-semibold mb-6 text-amber-800">{t("Used Promo Codes", "الرموز المستخدمة")}</h2>
+      {promoCodes.length === 0 ? (
+        <p className="text-gray-600">{t("No promo codes used yet.", "لا توجد رموز مستخدمة بعد")}</p>
+      ) : (
+        promoCodes.map((promo) => (
+          <div key={promo.id} className="border p-4 rounded-xl mb-3 shadow-md bg-white/90">
+            <p><strong>{t("Code", "الرمز")}:</strong> {promo.code}</p>
+            <p><strong>{t("Discount", "الخصم")}:</strong> {promo.discountType === "percentage" ? `${promo.discountValue}%` : `${promo.discountValue} EGP`}</p>
+            <p><strong>{t("Expires", "ينتهي في")}:</strong> {promo.expiresAt.toDate().toLocaleDateString()}</p>
           </div>
-
-          <button onClick={handleProfileUpdate} className="mt-5 bg-amber-700 text-white px-6 py-2 rounded-lg hover:bg-amber-800 transition">
-            {t("Save Changes", "حفظ التغييرات")}
-          </button>
-        </div>
-      )}
-
-      {/* ORDERS */}
-      {activeTab === "orders" && (
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">{t("Order History", "تاريخ الطلبات")}</h2>
-          {orders.length === 0 ? <p className="text-gray-600">{t("You have no orders yet.", "لا يوجد لديك طلبات بعد")}</p> : orders.map((order) => <OrderItem key={order.id} order={order} t={t} />)}
-        </div>
-      )}
-
-      {/* PROMOS */}
-      {activeTab === "promos" && (
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">{t("Used Promo Codes", "الرموز المستخدمة")}</h2>
-          {promoCodes.length === 0 ? (
-            <p className="text-gray-600">{t("No promo codes used yet.", "لا توجد رموز مستخدمة بعد")}</p>
-          ) : (
-            promoCodes.map((promo) => (
-              <div key={promo.id} className="border p-4 rounded-lg mb-3 shadow-sm bg-gray-50">
-                <p>
-                  <strong>{t("Code", "الرمز")}:</strong> {promo.code}
-                </p>
-                <p>
-                  <strong>{t("Discount", "الخصم")}:</strong> {promo.discountType === "percentage" ? `${promo.discountValue}%` : `${promo.discountValue} EGP`}
-                </p>
-                <p>
-                  <strong>{t("Expires", "ينتهي في")}:</strong> {promo.expiresAt.toDate().toLocaleDateString()}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
+        ))
       )}
     </div>
+  )}
+</div>
+
   );
 }

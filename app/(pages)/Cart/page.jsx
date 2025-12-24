@@ -32,25 +32,55 @@ export default function ProtectedCartPage() {
   const deliveryFee = qualifies ? 0 : 50;
   const finalTotal = cartTotal + deliveryFee;
 
+  // -----------------------------
+  // Empty Cart
+  // -----------------------------
   if (cart.length === 0) {
     return (
-      <div className={`p-10 text-center ${lang === "ar" ? "rtl" : "ltr"}`}>
-        <h2 className="text-2xl font-bold mb-4">
+      <div
+        className={`flex flex-col items-center justify-center min-h-[60vh] text-center px-4 ${
+          lang === "ar" ? "rtl" : "ltr"
+        }`}
+      >
+        <Image
+          src="/empty_cart.png" // optional empty cart icon
+          alt="Empty Cart"
+          width={120}
+          height={120}
+          className="mb-6"
+        />
+        <h2 className="text-2xl md:text-3xl font-bold mb-2 text-amber-900">
           {lang === "ar" ? "سلة التسوق فارغة" : "Your cart is empty"}
         </h2>
-        <Link href="/AllScarfs" className="text-amber-700 underline">
+        <p className="mb-6 text-gray-600">
+          {lang === "ar"
+            ? "يبدو أنك لم تضف أي منتجات بعد."
+            : "It looks like you haven't added any products yet."}
+        </p>
+        <Link
+          href="/AllScarfs"
+          className={`
+            inline-block px-6 py-3 rounded-full text-[13px] font-semibold text-white
+            bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow transition-all duration-300
+          `}
+        >
           {lang === "ar" ? "تصفح الأوشحة" : "Browse Scarves"}
         </Link>
       </div>
     );
   }
 
+  // -----------------------------
+  // Filled Cart
+  // -----------------------------
   return (
     <div className={`max-w-6xl mx-auto px-6 py-10 ${lang === "ar" ? "rtl text-right" : "ltr text-left"}`}>
-      <h1           className={`
-            text-4xl mb-6 text-center text-amber-900
-            ${lang === "ar" ? "draw-ar" : "draw-en"}
-          `}>
+      <h1
+        className={`
+          text-4xl mb-6 text-center text-amber-900 font-bold
+          ${lang === "ar" ? "draw-ar" : "draw-en"}
+        `}
+      >
         {lang === "ar" ? "سلة التسوق" : "Shopping Cart"}
       </h1>
       <div className="w-full h-px bg-linear-to-r from-transparent via-[#D4AF37] to-transparent my-12" />
@@ -87,7 +117,7 @@ export default function ProtectedCartPage() {
           >
             <div className="flex items-center gap-4 w-full md:w-auto">
               <div className="w-24 h-24 relative shrink-0">
-                <Image src={item.imageCover} alt={item.title} fill className="object-cover rounded-lg" />
+                <Image src={item.images[0]} alt={item.title} fill className="object-cover rounded-lg" />
               </div>
               <div className="flex flex-col">
                 <h2 className="font-semibold text-lg">{item.title}</h2>
@@ -124,24 +154,37 @@ export default function ProtectedCartPage() {
           <p className="mt-1 font-bold">{lang === "ar" ? "الإجمالي" : "Total"}: {finalTotal.toLocaleString()} EGP</p>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-col md:flex-row w-full md:w-auto">
+          {/* Clear Cart */}
           <button
             onClick={clearCart}
-            className="bg-amber-700 text-white px-6 py-3 rounded-full hover:bg-amber-800"
+            className={`
+              w-full md:w-auto py-2 px-6 rounded-full text-[13px] font-semibold text-white
+              transition-all duration-300
+              bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow
+            `}
           >
             {lang === "ar" ? "مسح السلة" : "Clear Cart"}
           </button>
 
+          {/* Checkout */}
           <button
             onClick={() => router.push("/checkout")}
             disabled={cart.length === 0}
-            className={`px-6 py-3 rounded-full text-white ${
-              cart.length === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
-            }`}
+            className={`
+              w-full md:w-auto py-2 px-6 rounded-full text-[13px] font-semibold text-white
+              transition-all duration-300
+              ${
+                cart.length === 0
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-linear-to-r from-green-600 to-green-800 hover:opacity-90 shadow"
+              }
+            `}
           >
             {lang === "ar" ? "الدفع" : "Checkout"}
           </button>
         </div>
+
       </div>
     </div>
   );

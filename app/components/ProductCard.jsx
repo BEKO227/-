@@ -21,9 +21,7 @@ export default function ProductCard({ product, small = false }) {
   const itemInCart = cart.find((i) => i.id === product.id);
   const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
-  useEffect(() => {
-    setDisabled(product.stock <= 0);
-  }, [product.stock]);
+  useEffect(() => setDisabled(product.stock <= 0), [product.stock]);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -37,11 +35,8 @@ export default function ProductCard({ product, small = false }) {
     );
   };
 
-  const goToDetails = () => {
-    router.push(`/products/${product.id}`);
-  };
+  const goToDetails = () => router.push(`/products/${product.id}`);
 
-  /* ✅ SAFE IMAGE LOGIC */
   const images =
     Array.isArray(product.images) && product.images.length > 0
       ? product.images.filter(Boolean)
@@ -55,140 +50,158 @@ export default function ProductCard({ product, small = false }) {
   if (product.isOnSale) badges.push(lang === "en" ? "On Sale" : "تخفيض");
 
   const badgeColors = {
-    "New Arrival": "bg-blue-500",
-    "أحدث": "bg-blue-500",
-    "Top Seller": "bg-green-500",
-    "الأكثر مبيعًا": "bg-green-500",
-    "On Sale": "bg-red-500",
-    "تخفيض": "bg-red-500",
+    "New Arrival": "from-blue-400 to-blue-600",
+    "أحدث": "from-blue-400 to-blue-600",
+    "Top Seller": "from-emerald-400 to-emerald-600",
+    "الأكثر مبيعًا": "from-emerald-400 to-emerald-600",
+    "On Sale": "from-rose-500 to-red-600",
+    "تخفيض": "from-rose-500 to-red-600",
   };
 
   return (
-    <Card
-      onClick={goToDetails}
-      className="shadow-md rounded-2xl overflow-hidden w-full max-w-[320px] mx-auto cursor-pointer hover:shadow-xl transition relative"
-    >
-      <CardHeader className="p-0 relative">
-        <div className="relative w-full h-64">
-          {coverImage && (
-            <Image
-              src={coverImage}
-              alt={product.title}
-              fill
-              className="object-cover rounded-t-2xl"
-              sizes="(max-width: 768px) 100vw, 320px"
-            />
-          )}
-        </div>
+<Card
+  onClick={goToDetails}
+  className="
+    group relative overflow-hidden rounded-2xl
+    bg-white/90 backdrop-blur
+    shadow-[0_12px_32px_rgba(0,0,0,0.06)]
+    hover:shadow-[0_20px_45px_rgba(0,0,0,0.10)]
+    transition-all duration-300
+    cursor-pointer
+    max-w-60  /* ⭐ smaller width */
+"
+>
+  <CardHeader className="p-0 relative">
+    <div className="relative w-full h-44 overflow-hidden rounded-t-2xl">
+      <div className="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/40 z-2" />
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-          {badges.map((badge) => (
-            <span
-              key={badge}
-              className={`text-white text-xs font-bold px-2 py-1 rounded-full ${badgeColors[badge]}`}
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-      </CardHeader>
+      <Image
+        src={coverImage}
+        alt={product.title}
+        fill
+        className="
+          object-cover
+          transition-transform duration-500
+          group-hover:scale-105
+        "
+        sizes="(max-width: 768px) 100vw, 240px"
+      />
+    </div>
 
-      <CardContent className="p-4">
-        {/* Title */}
-        <CardTitle className="text-lg font-medium text-amber-800">
-          {lang === "en" ? product.title : product.title_ar || product.title}
-        </CardTitle>
+    <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-3">
+      {badges.map((badge) => (
+        <span
+          key={badge}
+          className={`
+            px-2 py-0.5 text-[10px] font-bold text-white
+            rounded-full shadow-sm
+            bg-linear-to-r ${badgeColors[badge]}
+          `}
+        >
+          {badge}
+        </span>
+      ))}
+    </div>
+  </CardHeader>
 
-        {/* Brand */}
-        {product.brand && (
-          <p className="text-sm text-gray-500 mt-1 font-medium">
-            {getText(product.brand, product.brand_ar)}
-          </p>
-        )}
+  <CardContent className="p-3 flex flex-col justify-between h-full">
+  <div>
+    <CardTitle className="text-sm font-semibold text-amber-900 leading-snug line-clamp-2">
+      {lang === "en"
+        ? product.title
+        : product.title_ar || product.title}
+    </CardTitle>
 
-        {/* Category */}
-        {product.category && (
-          <span className="inline-block mt-3 mb-2 px-4 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
-            {getText(product.category, product.categoryAr)}
-          </span>
-        )}
+    {product.brand && (
+      <p className="text-[11px] mt-1 text-gray-500 line-clamp-1">
+        {getText(product.brand, product.brand_ar)}
+      </p>
+    )}
 
-        {/* Price */}
-        <p className="text-amber-700 font-semibold mt-1">
-          {product.price} EGP
-        </p>
+    {product.category && (
+      <span className="inline-block mt-2 mb-1 px-3 py-[3px] rounded-full text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+        {getText(product.category, product.categoryAr)}
+      </span>
+    )}
 
-        {/* Stock */}
-        <p className="mt-2 text-gray-600">
-          {product.stock > 0 ? (
-            <span className="text-green-600 font-bold">
-              {lang === "en" ? "In Stock" : "متوفر"}
-            </span>
-          ) : (
-            <span className="text-red-600 font-bold">
-              {lang === "en" ? "Out of Stock" : "غير متوفر"}
-            </span>
-          )}
-        </p>
+    <p className="text-lg font-bold text-amber-700 mt-1">
+      {product.price} <span className="text-[11px] text-gray-500">EGP</span>
+    </p>
 
-        {/* Cart Actions */}
-        {!itemInCart ? (
-          <button
-            onClick={handleAddToCart}
-            disabled={disabled}
-            className={`mt-3 w-full py-2 rounded-full font-semibold text-white ${
+    <p className="mt-1">
+      {product.stock > 0 ? (
+        <span className="text-green-600 text-[12px] font-semibold">
+          {lang === "en" ? "In Stock" : "متوفر"}
+        </span>
+      ) : (
+        <span className="text-red-600 text-[12px] font-semibold">
+          {lang === "en" ? "Out of Stock" : "غير متوفر"}
+        </span>
+      )}
+    </p>
+  </div>
+
+      {!itemInCart ? (
+        <button
+          onClick={handleAddToCart}
+          disabled={disabled}
+          className={`
+            mt-3 w-full py-2 rounded-full text-[13px] font-semibold text-white
+            transition-all duration-300
+            ${
               disabled
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-amber-700 hover:bg-amber-800"
-            }`}
-          >
-            {disabled
-              ? lang === "en"
-                ? "Out of Stock"
-                : "غير متوفر"
-              : lang === "en"
-              ? "Add to Cart"
-              : "أضف إلى السلة"}
-          </button>
-        ) : (
-          <div
-            className="mt-4 flex items-center justify-between"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {itemInCart.quantity === 1 ? (
-              <button
-                onClick={() => removeFromCart(product.id)}
-                className="p-2 bg-red-500 text-white rounded-full"
-              >
-                <Trash size={18} />
-              </button>
-            ) : (
-              <button
-                onClick={() =>
-                  updateQuantity(product.id, itemInCart.quantity - 1)
-                }
-                className="px-4 py-2 bg-gray-200 rounded-full text-lg font-bold"
-              >
-                -
-              </button>
-            )}
-
-            <span className="px-4 text-lg font-semibold">
-              {itemInCart.quantity}
-            </span>
-
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow"
+            }
+          `}
+        >
+          {disabled
+            ? lang === "en"
+              ? "Out of Stock"
+              : "غير متوفر"
+            : lang === "en"
+            ? "Add to Cart"
+            : "أضف إلى السلة"}
+        </button>
+      ) : (
+        <div
+          className="mt-3 flex items-center justify-between"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {itemInCart.quantity === 1 ? (
+            <button
+              onClick={() => removeFromCart(product.id)}
+              className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition"
+            >
+              <Trash size={14} />
+            </button>
+          ) : (
             <button
               onClick={() =>
-                updateQuantity(product.id, itemInCart.quantity + 1)
+                updateQuantity(product.id, itemInCart.quantity - 1)
               }
-              className="px-4 py-2 bg-gray-200 rounded-full text-lg font-bold"
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-bold"
             >
-              +
+              -
             </button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+
+          <span className="px-3 text-sm font-semibold">
+            {itemInCart.quantity}
+          </span>
+
+          <button
+            onClick={() =>
+              updateQuantity(product.id, itemInCart.quantity + 1)
+            }
+            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-bold"
+          >
+            +
+          </button>
+        </div>
+      )}
+    </CardContent>
+</Card>
+
   );
 }
