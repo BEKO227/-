@@ -83,6 +83,34 @@ export default function ProductDetails({ id }) {
 
   const disabled = scarf.stock <= 0;
 
+  // --- Protected Cart Actions ---
+  const handleAddToCart = () => {
+    if (!user) {
+      toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
+      router.push("/login"); // optional redirect to login
+      return;
+    }
+    addToCart(scarf);
+  };
+
+  const handleUpdateQuantity = (quantity) => {
+    if (!user) {
+      toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
+      router.push("/login");
+      return;
+    }
+    updateQuantity(scarf.id, quantity);
+  };
+
+  const handleRemoveFromCart = () => {
+    if (!user) {
+      toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
+      router.push("/login");
+      return;
+    }
+    removeFromCart(scarf.id);
+  };
+
   return (
     <>
       {/* Navbar */}
@@ -161,8 +189,6 @@ export default function ProductDetails({ id }) {
             >
               {getText(scarf.category, scarf.categoryAr)}
             </span>
-
-
           )}
 
           {/* Description */}
@@ -244,7 +270,7 @@ export default function ProductDetails({ id }) {
           {/* Cart Actions */}
           {!itemInCart ? (
             <button
-              onClick={() => addToCart(scarf)}
+              onClick={handleAddToCart}
               disabled={disabled}
               className={`
                 mt-3 w-full py-2 rounded-full text-[16px] font-semibold text-white
@@ -268,7 +294,7 @@ export default function ProductDetails({ id }) {
             <div className="mt-3 flex items-center justify-between">
               {itemInCart.quantity === 1 ? (
                 <button
-                  onClick={() => removeFromCart(scarf.id)}
+                  onClick={handleRemoveFromCart}
                   className="p-2 bg-red-500 text-white rounded-full shadow-lg transition"
                 >
                   <Trash size={18} />
@@ -276,7 +302,7 @@ export default function ProductDetails({ id }) {
               ) : (
                 <button
                   onClick={() =>
-                    updateQuantity(scarf.id, itemInCart.quantity - 1)
+                    handleUpdateQuantity(itemInCart.quantity - 1)
                   }
                   className="px-4 py-2 bg-gray-200 rounded-full font-bold shadow-sm transition"
                 >
@@ -288,7 +314,7 @@ export default function ProductDetails({ id }) {
               </span>
               <button
                 onClick={() =>
-                  updateQuantity(scarf.id, itemInCart.quantity + 1)
+                  handleUpdateQuantity(itemInCart.quantity + 1)
                 }
                 className="px-4 py-2 bg-gray-200 rounded-full font-bold shadow-sm transition"
               >
