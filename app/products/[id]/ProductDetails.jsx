@@ -87,7 +87,7 @@ export default function ProductDetails({ id }) {
   const handleAddToCart = () => {
     if (!user) {
       toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
-      router.push("/login"); // optional redirect to login
+      router.push("/auth/signin"); // optional redirect to auth/signin
       return;
     }
     addToCart(scarf);
@@ -96,7 +96,7 @@ export default function ProductDetails({ id }) {
   const handleUpdateQuantity = (quantity) => {
     if (!user) {
       toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
-      router.push("/login");
+      router.push("/auth/signin");
       return;
     }
     updateQuantity(scarf.id, quantity);
@@ -105,7 +105,7 @@ export default function ProductDetails({ id }) {
   const handleRemoveFromCart = () => {
     if (!user) {
       toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
-      router.push("/login");
+      router.push("/auth/signin");
       return;
     }
     removeFromCart(scarf.id);

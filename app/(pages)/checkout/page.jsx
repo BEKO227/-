@@ -46,6 +46,8 @@ export default function CheckoutPage() {
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [placingOrder, setPlacingOrder] = useState(false);
 
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
+
   const governments = [
     "Cairo","Alexandria","Giza","Qalyubia","Dakahlia","Sharqia",
     "Gharbia","Beheira","Fayoum","Menoufia","Minya","Asyut",
@@ -126,17 +128,39 @@ export default function CheckoutPage() {
     if (!authLoading && !placingOrder && !user) router.push("/auth/signin");
   }, [user, authLoading, placingOrder, router]);
 
-  // Promo code logic
+  // Check if first order
+  useEffect(() => {
+    if (!user) return;
+    const checkFirstOrder = async () => {
+      const q = query(collection(db, "orders"), where("userId", "==", user.uid));
+      const snap = await getDocs(q);
+      setIsFirstOrder(snap.empty); // true if no previous orders
+    };
+    checkFirstOrder();
+  }, [user]);
+
   const userHasPreviousOrders = async () => {
     const q = query(collection(db, "orders"), where("userId", "==", user.uid));
     const snap = await getDocs(q);
     return !snap.empty;
   };
 
+  // Handle Apply Promo
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return toast.error(t("Enter promo code", "أدخل رمز الخصم"));
     const code = promoCode.toUpperCase();
+
     try {
+      // Special case: first order SAVE10
+      if (code === "SAVE10") {
+        if (!isFirstOrder) return toast.error(t("Promo valid for first order only", "الرمز صالح للطلب الأول فقط"));
+        const discountValue = Math.min(cartTotal * 0.1, 100); // 10% discount, max 100 EGP
+        setDiscount(discountValue);
+        setPromoApplied(true);
+        return toast.success(t(`Saved ${discountValue.toFixed(2)} EGP`, `تم حفظ ${discountValue.toFixed(2)} جنيه`));
+      }
+
+      // Regular promo code from Firestore
       const promoRef = doc(db, "promocodes", code);
       const promoSnap = await getDoc(promoRef);
       if (!promoSnap.exists()) return toast.error(t("Invalid promo code", "رمز خصم غير صالح"));
@@ -213,18 +237,17 @@ export default function CheckoutPage() {
     return <div className="p-10 text-center text-amber-700 text-xl">{t("Loading...", "جار التحميل...")}</div>;
 
   return (
-<div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
-  <button
-    onClick={() => router.back()}
-    className="
-      flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-amber-700
-      border border-amber-700 hover:bg-amber-50 transition-all duration-200
-      shadow-sm
-    "
-  >
-    ← {t("Back", "رجوع")}
-  </button>
-
+    <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">
+      <button
+        onClick={() => router.back()}
+        className="
+          flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-amber-700
+          border border-amber-700 hover:bg-amber-50 transition-all duration-200
+          shadow-sm
+        "
+      >
+        ← {t("Back", "رجوع")}
+      </button>
 
       <h1 className="text-3xl font-bold mb-6">{t("Checkout", "إتمام الطلب")}</h1>
 
@@ -295,6 +318,13 @@ export default function CheckoutPage() {
             </button>
           )}
         </div>
+
+        {isFirstOrder && !promoApplied && (
+          <p className="text-blue-700 text-sm mt-1">
+            {t("First-time buyer? Use code SAVE10 to get 10% off (max 100 EGP)!", "هل هذا طلبك الأول؟ استخدم الرمز SAVE10 للحصول على خصم 10٪ (بحد أقصى 100 جنيه)!")}
+          </p>
+        )}
+
         {promoApplied && (
           <p className="text-green-700 font-medium mt-1">
             {t("Discount", "الخصم")}: {discount.toFixed(2)} EGP
@@ -324,92 +354,60 @@ export default function CheckoutPage() {
         </div>
       </div>
 
+      {/* PAYMENT */}
+      <div className="p-6 bg-white rounded-xl shadow-md space-y-4">
+        <h2 className="text-xl font-semibold">{t("Payment Method", "طريقة الدفع")}</h2>
 
-{/* PAYMENT */}
-<div className="p-6 bg-white rounded-xl shadow-md space-y-4">
-  <h2 className="text-xl font-semibold">{t("Payment Method", "طريقة الدفع")}</h2>
+        <div className="flex flex-col md:flex-row gap-4">
+          <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:shadow-md transition">
+            <input
+              type="radio"
+              name="payment"
+              value="COD"
+              checked={paymentMethod === "COD"}
+              onChange={() => setPaymentMethod("COD")}
+              className="accent-amber-700"
+            />
+            {t("Cash on Delivery", "الدفع عند الاستلام")}
+          </label>
+          <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:shadow-md transition">
+            <input
+              type="radio"
+              name="payment"
+              value="InstaPay"
+              checked={paymentMethod === "InstaPay"}
+              onChange={() => setPaymentMethod("InstaPay")}
+              className="accent-amber-700"
+            />
+            InstaPay
+          </label>
+        </div>
 
-  <div className="flex flex-col md:flex-row gap-4">
-    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:shadow-md transition">
-      <input
-        type="radio"
-        name="payment"
-        value="COD"
-        checked={paymentMethod === "COD"}
-        onChange={() => setPaymentMethod("COD")}
-        className="accent-amber-700"
-      />
-      {t("Cash on Delivery", "الدفع عند الاستلام")}
-    </label>
-    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:shadow-md transition">
-      <input
-        type="radio"
-        name="payment"
-        value="InstaPay"
-        checked={paymentMethod === "InstaPay"}
-        onChange={() => setPaymentMethod("InstaPay")}
-        className="accent-amber-700"
-      />
-      InstaPay
-    </label>
-  </div>
+        {paymentMethod === "InstaPay" && (
+          <div className="mt-4 p-4 bg-yellow-50 border rounded-xl space-y-3 relative">
+            <p className="font-medium">
+              {t("Please pay to:", "يرجى الدفع إلى:")} <br />
+              Phone: +20 102 715 7089 <br />
+              Bank Account: 123-456-789-1011
+            </p>
+            <input
+              type="text"
+              placeholder={t("Enter InstaPay Reference Number", "أدخل رقم المرجع الخاص بـ InstaPay")}
+              value={instaRef}
+              onChange={(e) => setInstaRef(e.target.value)}
+              className="w-full border rounded-lg p-3"
+            />
+          </div>
+        )}
+      </div>
 
-  {paymentMethod === "InstaPay" && (
-    <div className="mt-4 p-4 bg-yellow-50 border rounded-xl space-y-3 relative">
-      <p className="font-medium">
-        {t("Please pay to:", "يرجى الدفع إلى:")} <br />
-        Phone: +20 102 715 7089 <br />
-        Bank Account: 123-456-789-1011
-      </p>
-      <p className="space-y-1 text-sm">
-        <span>1. {t("Include your username in the transaction notes.", "قم بإدراج اسم المستخدم في ملاحظات التحويل.")}</span><br />
-        <span>2. {t("Complete the payment.", "أكمل الدفع.")}</span><br />
-        <span>3. {t("Send screenshot on WhatsApp.", "أرسل لقطة الشاشة عبر واتساب.")}</span><br />
-        <span>4. {t("Enter the reference number.", "أدخل رقم المرجع.")}</span>
-      </p>
-
-      {/* WhatsApp floating button */}
-      <a
-        href="https://wa.me/201027157089"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute top-2 right-2 flex items-center gap-2 text-white bg-green-500 hover:bg-green-600 px-3 py-2 rounded-full shadow-lg transition-transform transform hover:scale-110"
+      <button
+        onClick={handleOrder}
+        disabled={loading}
+        className="w-full bg-amber-700 hover:bg-amber-800 text-white py-4 rounded-xl font-bold text-lg transition mt-4"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path d="M12 0C5.373 0 0 5.372 0 12c0 2.124.557 4.106 1.523 5.828L0 24l6.276-1.514A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm6.5 16.5c-.251.706-1.518 1.345-2.091 1.422-.56.075-1.24.106-1.854-.154-.61-.26-1.478-1.08-1.818-1.457-.338-.377-1.085-1.588-1.188-1.767-.104-.178-.174-.386-.045-.63.128-.245.569-.633.762-.84.19-.205.25-.343.378-.57.128-.226.064-.426-.032-.593-.094-.166-.857-2.063-1.175-2.815-.311-.74-.63-.64-.857-.652-.224-.014-.48-.017-.737-.017-.255 0-.667.094-1.017.45-.348.356-1.32 1.287-1.32 3.133 0 1.846 1.352 3.633 1.54 3.883.188.25 2.66 4.18 6.44 5.78 3.776 1.6 3.776 1.067 4.457.998.682-.07 2.45-1.004 2.8-1.975.35-.97.35-1.803.245-1.975z" />
-        </svg>
-        WhatsApp
-      </a>
-
-      <input
-        type="text"
-        placeholder={t("Reference Number *", "رقم المرجع *")}
-        value={instaRef}
-        onChange={(e) => setInstaRef(e.target.value)}
-        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-amber-500 transition-all"
-      />
-    </div>
-  )}
-
-  {/* Place Order button */}
-  <button
-    onClick={handleOrder}
-    disabled={loading}
-    className={`
-      w-full md:w-auto py-2 px-6 rounded-full text-[13px] font-semibold text-white
-      transition-all duration-300 shadow-lg
-      ${loading ? "bg-gray-300 cursor-not-allowed" : "bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90"}
-    `}
-  >
-    {loading ? t("Placing Order...", "جارٍ تقديم الطلب...") : t("Place Order", "تأكيد الطلب")}
-  </button>
-</div>
-
+        {t(loading ? "Placing Order..." : "Place Order", loading ? "جارٍ إتمام الطلب..." : "إتمام الطلب")}
+      </button>
     </div>
   );
 }
