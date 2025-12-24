@@ -75,6 +75,16 @@ export default function ProtectedCartPage() {
   // -----------------------------
   return (
     <div className={`max-w-6xl mx-auto px-6 py-10 ${lang === "ar" ? "rtl text-right" : "ltr text-left"}`}>
+            <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
+          <button
+            onClick={() => router.back()}
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors duration-300"
+          >
+            ← {lang === "ar" ? "رجوع" : "Back"}
+          </button>
+        </div>
+      </div>
       <h1
         className={`
           text-4xl mb-6 text-center text-amber-900 font-bold

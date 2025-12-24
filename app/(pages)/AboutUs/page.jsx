@@ -11,6 +11,16 @@ export default function About() {
       className={`min-h-screen bg-[#FAF7F2] pt-20 pb-16 px-6 
         ${lang === "ar" ? "rtl font-cairo" : "ltr font-serif"}`}
     >
+            <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
+          <button
+            onClick={() => router.back()}
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors duration-300"
+          >
+            ← {lang === "ar" ? "رجوع" : "Back"}
+          </button>
+        </div>
+      </div>
 
       {/* HEADER TITLE */}
       <motion.h1

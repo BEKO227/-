@@ -47,12 +47,6 @@ export default function TopSellersPage() {
           >
             ← {lang === "ar" ? "رجوع" : "Back"}
           </button>
-          <div
-            className="text-2xl text-amber-700"
-            style={{ fontFamily: "'Diwani Letter', sans-serif" }}
-          >
-            قَمَرْ
-          </div>
         </div>
       </div>
 

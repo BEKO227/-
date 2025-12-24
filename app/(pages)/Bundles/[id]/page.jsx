@@ -59,6 +59,16 @@ export default function BundleDetailsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+       <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
+          <button
+            onClick={() => router.back()}
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors duration-300"
+          >
+            ← {lang === "ar" ? "رجوع" : "Back"}
+          </button>
+        </div>
+      </div>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}

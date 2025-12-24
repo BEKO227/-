@@ -68,21 +68,14 @@ export default function CategoryPage() {
   return (
     <>
       {/* Navbar */}
-      <div className="w-full bg-[#fdfaf7] py-1 shadow-md">
+      <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
-          <Link
-            href="/"
-            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700"
+          <button
+            onClick={() => router.back()}
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors duration-300"
           >
-            🏚️
-          </Link>
-
-          <div
-            className="text-2xl font-bold text-amber-700"
-            style={{ fontFamily: "'Diwani Letter', sans-serif" }}
-          >
-            قَمَرْ
-          </div>
+            ← {lang === "ar" ? "رجوع" : "Back"}
+          </button>
         </div>
       </div>
 

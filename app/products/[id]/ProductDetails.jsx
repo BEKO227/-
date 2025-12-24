@@ -114,15 +114,14 @@ export default function ProductDetails({ id }) {
   return (
     <>
       {/* Navbar */}
-      <div className="w-full bg-[#fdfaf7] py-2 shadow-md">
+      <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
-          <Link
-            href="/"
-            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 hover:text-white transition"
+          <button
+            onClick={() => router.back()}
+            className="py-2 px-4 border text-amber-950 rounded-full hover:bg-amber-700 transition-colors duration-300"
           >
-            🏚️
-          </Link>
-          <div className="text-2xl font-bold text-amber-700">قَمَرْ</div>
+            ← {lang === "ar" ? "رجوع" : "Back"}
+          </button>
         </div>
       </div>
 
