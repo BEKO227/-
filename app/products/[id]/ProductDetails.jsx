@@ -30,6 +30,7 @@ export default function ProductDetails({ id }) {
     ? cart.find((i) => String(i.id) === String(scarf.id))
     : undefined;
 
+  // Fetch product
   const fetchScarf = async () => {
     try {
       setLoading(true);
@@ -40,17 +41,17 @@ export default function ProductDetails({ id }) {
         const data = { id: docSnap.id, ...docSnap.data() };
         setScarf(data);
 
-        if (data.colors && data.colors.length > 0) {
+        if (data.colors?.length > 0) {
           setSelectedColor(data.colors[0]);
           setActiveImage(0);
-        } else if (data.images && data.images.length > 0) {
+        } else if (data.images?.length > 0) {
           setActiveImage(0);
         }
       } else {
         setScarf(null);
       }
-    } catch (error) {
-      console.error("Error fetching scarf:", error);
+    } catch (err) {
+      console.error(err);
       setScarf(null);
     } finally {
       setLoading(false);
@@ -83,31 +84,34 @@ export default function ProductDetails({ id }) {
 
   const disabled = scarf.stock <= 0;
 
-  // --- Protected Cart Actions ---
+  // ⭐ Main image priority
+  const mainImage =
+    selectedColor?.image ||
+    images[activeImage] ||
+    images[0];
+
+  // --- CART LOGIC ---
+  const requireLogin = () => {
+    toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
+    router.push("/auth/signin");
+  };
+
   const handleAddToCart = () => {
-    if (!user) {
-      toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
-      router.push("/auth/signin"); // optional redirect to auth/signin
-      return;
-    }
-    addToCart(scarf);
+    if (!user) return requireLogin();
+
+    addToCart({
+      ...scarf,
+      selectedColor: selectedColor || null,
+    });
   };
 
   const handleUpdateQuantity = (quantity) => {
-    if (!user) {
-      toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
-      router.push("/auth/signin");
-      return;
-    }
+    if (!user) return requireLogin();
     updateQuantity(scarf.id, quantity);
   };
 
   const handleRemoveFromCart = () => {
-    if (!user) {
-      toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
-      router.push("/auth/signin");
-      return;
-    }
+    if (!user) return requireLogin();
     removeFromCart(scarf.id);
   };
 
@@ -125,7 +129,6 @@ export default function ProductDetails({ id }) {
         </div>
       </div>
 
-      {/* Product Details */}
       <div className="container mx-auto px-6 md:px-20 py-10 flex flex-col md:flex-row gap-12">
         {/* Images */}
         <div className="flex-1">
@@ -134,7 +137,7 @@ export default function ProductDetails({ id }) {
             onClick={() => setIsImageOpen(true)}
           >
             <Image
-              src={images[activeImage]}
+              src={mainImage}
               alt={getText(scarf.title, scarf.titleAr)}
               width={500}
               height={500}
@@ -148,9 +151,12 @@ export default function ProductDetails({ id }) {
               {images.map((img, index) => (
                 <button
                   key={index}
-                  onClick={() => setActiveImage(index)}
+                  onClick={() => {
+                    setActiveImage(index);
+                    setSelectedColor(null);
+                  }}
                   className={`border rounded-lg p-1 transition ${
-                    activeImage === index
+                    activeImage === index && !selectedColor
                       ? "border-amber-700 shadow-lg"
                       : "border-gray-300"
                   }`}
@@ -167,9 +173,8 @@ export default function ProductDetails({ id }) {
             </div>
           )}
         </div>
-
-        {/* Details */}
-        <div className="flex-1 flex flex-col justify-center gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg">
+ {/* Details */}
+ <div className="flex-1 flex flex-col justify-center gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg">
           {/* Title */}
           <h1 className="text-4xl font-bold text-amber-800 mb-2">
             {getText(scarf.title, scarf.titleAr)}
@@ -219,35 +224,41 @@ export default function ProductDetails({ id }) {
             </div>
           </div>
 
-          {/* Color Selector */}
-          {scarf.colors && scarf.colors.length > 0 && (
-            <div className="flex gap-3 mt-4 mb-4">
-              {scarf.colors.map((color, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setSelectedColor(color);
-                    setActiveImage(index);
-                  }}
-                  className={`w-8 h-8 rounded-full border-2 transition ${
-                    selectedColor?.name === color.name
-                      ? "border-amber-700 shadow-md"
-                      : "border-gray-300"
-                  }`}
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                />
-              ))}
+          {/* Colors */}
+          {scarf.colors?.length > 0 && (
+            <div>
+              <p className="mb-2 text-sm text-gray-600">
+                {lang === "en" ? "Choose color:" : "اختر اللون:"}
+              </p>
+
+              <div className="flex gap-3 mt-2 mb-4">
+                {scarf.colors.map((color, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setActiveImage(index);
+                    }}
+                    className={`w-8 h-8 rounded-full border-2 transition ${
+                      selectedColor?.name === color.name
+                        ? "border-amber-700 shadow-md"
+                        : "border-gray-300"
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
           {/* Price */}
-          <p className="text-2xl font-semibold text-amber-700 mt-2 mb-2">
+          <p className="text-2xl font-semibold text-amber-700">
             {scarf.price} EGP
           </p>
 
           {/* Rating */}
-          <p className="text-lg text-gray-700 mb-2">
+          <p className="text-lg text-gray-700">
             ⭐ {(scarf.ratingsAverage || 0).toFixed(1)} (
             {scarf.ratingsQuantity || 0}{" "}
             {lang === "en" ? "reviews" : "تقييم"})
@@ -271,15 +282,11 @@ export default function ProductDetails({ id }) {
             <button
               onClick={handleAddToCart}
               disabled={disabled}
-              className={`
-                mt-3 w-full py-2 rounded-full text-[16px] font-semibold text-white
-                transition-all duration-300
-                ${
-                  disabled
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow"
-                }
-              `}
+              className={`mt-3 w-full py-2 rounded-full text-[16px] font-semibold text-white transition-all duration-300 ${
+                disabled
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow"
+              }`}
             >
               {disabled
                 ? lang === "en"
@@ -308,9 +315,11 @@ export default function ProductDetails({ id }) {
                   -
                 </button>
               )}
+
               <span className="px-4 text-lg font-semibold">
                 {itemInCart.quantity}
               </span>
+
               <button
                 onClick={() =>
                   handleUpdateQuantity(itemInCart.quantity + 1)
@@ -324,14 +333,14 @@ export default function ProductDetails({ id }) {
         </div>
       </div>
 
-      {/* Image Modal */}
+      {/* Fullscreen image viewer */}
       {isImageOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
           onClick={() => setIsImageOpen(false)}
         >
           <Image
-            src={images[activeImage]}
+            src={mainImage}
             alt="Full Image"
             width={900}
             height={900}
