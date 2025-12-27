@@ -8,12 +8,14 @@ import { motion } from "framer-motion";
 import { useLanguage } from "@/app/LanguageContext";
 import { useParams } from "next/navigation";
 import ProductCard from "../../../components/ProductCard";
+import { useRouter } from "next/navigation";
 
 export default function CategoryPage() {
   const { lang } = useLanguage();
   const { category } = useParams(); // category from URL
   const [scarves, setScarves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Category lookup object
   const categoriesMap = {
