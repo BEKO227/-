@@ -199,33 +199,8 @@ export default function ProductDetails({ id }) {
           <p className="text-gray-700 leading-relaxed mb-4">
             {getText(scarf.description, scarf.descriptionAr)}
           </p>
-
-          {/* Product Disclaimer */}
-          <div className="mt-4 p-4 rounded-2xl bg-linear-to-r from-amber-50 to-amber-100 shadow-md border border-amber-200">
-            <div className="flex items-start gap-3">
-              <span className="text-amber-700 font-bold text-lg">⚠️</span>
-              <div className="text-gray-700 text-sm space-y-2 leading-relaxed">
-                <p>
-                  {lang === "en"
-                    ? "Please note that product colors may appear slightly different due to lighting, screen resolution, and photography."
-                    : "يرجى ملاحظة أن ألوان المنتج قد تبدو مختلفة قليلاً بسبب الإضاءة ودقة الشاشة والتصوير."}
-                </p>
-                <p>
-                  {lang === "en"
-                    ? "Minor variations in texture or shade are normal and do not affect the quality or authenticity of the product."
-                    : "الاختلافات الطفيفة في الملمس أو اللون طبيعية ولا تؤثر على جودة أو أصالة المنتج."}
-                </p>
-                <p className="font-semibold">
-                  {lang === "en"
-                    ? "All items are original La Voile products, carefully selected to meet high quality standards."
-                    : "جميع المنتجات أصلية من La Voile، تم اختيارها بعناية لتلبية معايير الجودة العالية."}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Colors */}
-          {scarf.colors?.length > 0 && (
+                    {/* Colors */}
+                    {scarf.colors?.length > 0 && (
             <div>
               <p className="mb-2 text-sm text-gray-600">
                 {lang === "en" ? "Choose color:" : "اختر اللون:"}
@@ -251,6 +226,30 @@ export default function ProductDetails({ id }) {
               </div>
             </div>
           )}
+
+          {/* Product Disclaimer */}
+          <div className="mt-4 p-4 rounded-2xl bg-linear-to-r from-amber-50 to-amber-100 shadow-md border border-amber-200">
+            <div className="flex items-start gap-3">
+              <span className="text-amber-700 font-bold text-lg">⚠️</span>
+              <div className="text-gray-700 text-sm space-y-2 leading-relaxed">
+                <p>
+                  {lang === "en"
+                    ? "Please note that product colors may appear slightly different due to lighting, screen resolution, and photography."
+                    : "يرجى ملاحظة أن ألوان المنتج قد تبدو مختلفة قليلاً بسبب الإضاءة ودقة الشاشة والتصوير."}
+                </p>
+                <p>
+                  {lang === "en"
+                    ? "Minor variations in texture or shade are normal and do not affect the quality or authenticity of the product."
+                    : "الاختلافات الطفيفة في الملمس أو اللون طبيعية ولا تؤثر على جودة أو أصالة المنتج."}
+                </p>
+                <p className="font-semibold">
+                  {lang === "en"
+                    ? "All items are original La Voile products, carefully selected to meet high quality standards."
+                    : "جميع المنتجات أصلية من La Voile، تم اختيارها بعناية لتلبية معايير الجودة العالية."}
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Price */}
           <p className="text-2xl font-semibold text-amber-700">

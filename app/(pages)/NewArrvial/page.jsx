@@ -7,11 +7,14 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/app/LanguageContext";
+import { useRouter } from "next/navigation";
+
 
 export default function NewArrivalPage() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
   const { lang } = useLanguage();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchNewArrivals = async () => {

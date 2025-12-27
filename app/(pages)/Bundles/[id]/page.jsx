@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/app/LanguageContext";
 import ProductCard from "@/app/components/ProductCard";
+import { useRouter } from "next/navigation";
 
 export default function BundleDetailsPage() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function BundleDetailsPage() {
   const [bundle, setBundle] = useState(null);
   const [scarves, setScarves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchBundle = async () => {

@@ -2,16 +2,14 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useLanguage } from '@/app/LanguageContext';
-
+import { useRouter } from "next/navigation";
 export default function About() {
   const { lang } = useLanguage();
+  const router = useRouter();
 
   return (
-    <div
-      className={`min-h-screen bg-[#FAF7F2] pt-20 pb-16 px-6 
-        ${lang === "ar" ? "rtl font-cairo" : "ltr font-serif"}`}
-    >
-            <div className="w-full bg-[#fdfaf7] py-3 shadow-md">
+    <>
+      <div className="w-full bg-[#fdfaf7] shadow-md py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
           <button
             onClick={() => router.back()}
@@ -21,6 +19,10 @@ export default function About() {
           </button>
         </div>
       </div>
+      <div
+      className={`min-h-screen bg-[#FAF7F2] pt-20 pb-16 px-6 
+        ${lang === "ar" ? "rtl font-cairo" : "ltr font-serif"}`}
+    >
 
       {/* HEADER TITLE */}
       <motion.h1
@@ -156,5 +158,7 @@ export default function About() {
       </motion.div>
 
     </div>
+    </>
+
   );
 }

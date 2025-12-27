@@ -7,12 +7,15 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/app/LanguageContext";
+import { useRouter } from "next/navigation";
+
 
 export default function AllScarfsPage() {
   const { lang } = useLanguage();
   const [scarves, setScarves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const router = useRouter();
 
   // Define categories
   const categories = [
