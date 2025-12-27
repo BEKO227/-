@@ -31,6 +31,7 @@ export default function TopSellersPage() {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
   };
+
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -77,7 +78,10 @@ export default function TopSellersPage() {
           >
             {topSellers.map((item) => (
               <motion.div key={item.id} variants={cardVariants}>
-                <div className="group relative rounded-3xl overflow-hidden shadow-lg sm:shadow-2xl hover:shadow-3xl transition-transform duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm sm:backdrop-blur-lg">
+                <div
+                  onClick={() => router.push(`/products/${item.id}`)}
+                  className="group relative rounded-3xl overflow-hidden shadow-lg sm:shadow-2xl hover:shadow-3xl transition-transform duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm sm:backdrop-blur-lg cursor-pointer"
+                >
                   {/* Product Image */}
                   <div className="relative w-full h-56 sm:h-72 overflow-hidden rounded-t-3xl">
                     <img
@@ -108,10 +112,15 @@ export default function TopSellersPage() {
                     <h3 className="text-xl font-serif text-amber-900 leading-snug mb-2">
                       {lang === "ar" ? item.title_ar || item.title : item.title}
                     </h3>
-                    <p className="text-lg text-amber-700 font-bold mb-2">{item.price}EGP</p>
+
+                    <p className="text-lg text-amber-700 font-bold mb-2">
+                      {item.price}EGP
+                    </p>
+
                     <p className="text-gray-500 text-sm mb-3">
                       {lang === "ar" ? "المخزون" : "Stock"}: {item.stock}
                     </p>
+
                     <div className="flex items-center gap-1">
                       {Array.from({ length: 5 }).map((_, idx) => (
                         <span
@@ -125,7 +134,9 @@ export default function TopSellersPage() {
                           ★
                         </span>
                       ))}
-                      <span className="text-gray-400 text-xs ml-1">({item.ratingsQuantity})</span>
+                      <span className="text-gray-400 text-xs ml-1">
+                        ({item.ratingsQuantity})
+                      </span>
                     </div>
                   </div>
                 </div>
