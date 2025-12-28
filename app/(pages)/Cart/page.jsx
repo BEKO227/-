@@ -120,40 +120,66 @@ export default function ProtectedCartPage() {
 
       {/* Cart Items */}
       <div className="flex flex-col gap-6">
-        {cart.map((item) => (
-          <div
-            key={item.id}
-            className="flex flex-col md:flex-row justify-between items-center border p-4 rounded-lg gap-4"
-          >
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="w-24 h-24 relative shrink-0">
-                <Image src={item.images[0]} alt={item.title} fill className="object-cover rounded-lg" />
-              </div>
-              <div className="flex flex-col">
-                <h2 className="font-semibold text-lg">{item.title}</h2>
-                <p className="text-amber-700 font-medium">{item.price.toLocaleString()} EGP</p>
-              </div>
-            </div>
+      {cart.map((item) => (
+  <div
+    key={item.uniqueId}
+    className="flex flex-col md:flex-row justify-between items-center border p-4 rounded-lg gap-4"
+  >
+    <div className="flex items-center gap-4 w-full md:w-auto">
+      <div className="w-24 h-24 relative shrink-0">
+        <Image
+          src={item.selectedColor?.image || item.images?.[0] || item.imageCover}
+          alt={item.title}
+          fill
+          className="object-cover rounded-lg"
+        />
+      </div>
 
-            <div className="flex items-center gap-3 mt-2 md:mt-0">
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) =>
-                  updateQuantity(item.id, Math.max(1, Number(e.target.value)))
-                }
-                className="w-16 border rounded p-1 text-center"
-              />
-              <button
-                onClick={() => removeFromCart(item.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-              >
-                {lang === "ar" ? "إزالة" : "Remove"}
-              </button>
-            </div>
+      <div className="flex flex-col">
+        <h2 className="font-semibold text-lg">{item.title}</h2>
+
+        {/* Show selected color */}
+        {item.selectedColor && (
+          <div className="flex items-center gap-2 text-sm">
+            <span>{lang === "ar" ? "اللون:" : "Color:"}</span>
+            <div
+              className="w-4 h-4 rounded-full border"
+              style={{ backgroundColor: item.selectedColor.hex }}
+            />
+            <span>{item.selectedColor.name}</span>
           </div>
-        ))}
+        )}
+
+        <p className="text-amber-700 font-medium">
+          {item.price.toLocaleString()} EGP
+        </p>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3 mt-2 md:mt-0">
+      <input
+        type="number"
+        min="1"
+        value={item.quantity}
+        onChange={(e) =>
+          updateQuantity(
+            item.uniqueId,
+            Math.max(1, Number(e.target.value))
+          )
+        }
+        className="w-16 border rounded p-1 text-center"
+      />
+
+      <button
+        onClick={() => removeFromCart(item.uniqueId)}
+        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+      >
+        {lang === "ar" ? "إزالة" : "Remove"}
+      </button>
+    </div>
+  </div>
+))}
+
       </div>
 
       {/* Totals & Checkout */}

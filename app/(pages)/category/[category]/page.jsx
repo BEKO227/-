@@ -20,18 +20,12 @@ export default function CategoryPage() {
   // Category lookup object
   const categoriesMap = {
     all: { en: "All", ar: "الكل" },
-    kuwaiti_design1: { en: "Kuwaiti Design 1", ar: "كويتي رسمة 1" },
-    kuwaiti_design2: { en: "Kuwaiti Design 2", ar: "كويتي رسمة 2" },
-    thiland: { en: "Thiland", ar: "تايلاندي" },
-    "dirty-linen": { en: "Dirty Linen", ar: "كتان متسخ" },
-    plain: { en: "Plain", ar: "سادة" },
-    chiffon: { en: "Chiffon", ar: "شيفون" },
     cotton: { en: "Cotton", ar: "قطن" },
-    "lycra-cotton": { en: "Lycra Cotton", ar: "قطن ليكرا" },
-    "printed-modal": { en: "Printed Modal", ar: "مودال مطبوع" },
-    modal: { en: "Modal", ar: "مودال" },
-    packet: { en: "Packet", ar: "بنادانا باكت" },
     bandana: { en: "Bandana", ar: "بنادانا" },
+    chiffon: { en: "Chiffon", ar: "شيفون" },
+    silk: { en: "Silk", ar: "حرير" },
+    kuwaiti: { en: "Kuwaiti", ar: "كويتي" },
+    thiland: { en: "Thailand", ar: "تايلاندي" },
   };
 
   useEffect(() => {

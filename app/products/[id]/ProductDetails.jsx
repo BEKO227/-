@@ -26,8 +26,15 @@ export default function ProductDetails({ id }) {
 
   const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
-  const itemInCart = scarf
-    ? cart.find((i) => String(i.id) === String(scarf.id))
+  // 👉 build a color-aware ID
+  const currentUniqueId = scarf
+    ? scarf.colors?.length > 0 && selectedColor
+      ? `${scarf.id}-${selectedColor.name}`
+      : scarf.id
+    : null;
+
+  const itemInCart = currentUniqueId
+    ? cart.find((i) => String(i.uniqueId) === String(currentUniqueId))
     : undefined;
 
   // Fetch product
@@ -84,35 +91,50 @@ export default function ProductDetails({ id }) {
 
   const disabled = scarf.stock <= 0;
 
-  // ⭐ Main image priority
   const mainImage =
-    selectedColor?.image ||
-    images[activeImage] ||
-    images[0];
+    selectedColor?.image || images[activeImage] || images[0];
 
-  // --- CART LOGIC ---
   const requireLogin = () => {
-    toast.error(lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً");
+    toast.error(
+      lang === "en" ? "Please log in first" : "يرجى تسجيل الدخول أولاً"
+    );
     router.push("/auth/signin");
   };
 
+  // ⭐ ADD TO CART (color required)
   const handleAddToCart = () => {
     if (!user) return requireLogin();
 
+    if (scarf.colors?.length > 0 && !selectedColor) {
+      toast.error(
+        lang === "en" ? "Please choose a color" : "اختر اللون أولاً"
+      );
+      return;
+    }
+
     addToCart({
       ...scarf,
-      selectedColor: selectedColor || null,
+
+      selectedColor: selectedColor
+        ? {
+            name: selectedColor.name,
+            hex: selectedColor.hex,
+            image: selectedColor.image || null,
+          }
+        : null,
+
+      uniqueId: currentUniqueId,
     });
   };
 
   const handleUpdateQuantity = (quantity) => {
     if (!user) return requireLogin();
-    updateQuantity(scarf.id, quantity);
+    updateQuantity(currentUniqueId, quantity);
   };
 
   const handleRemoveFromCart = () => {
     if (!user) return requireLogin();
-    removeFromCart(scarf.id);
+    removeFromCart(currentUniqueId);
   };
 
   return (
@@ -145,7 +167,6 @@ export default function ProductDetails({ id }) {
             />
           </div>
 
-          {/* Thumbnails */}
           {images.length > 1 && (
             <div className="flex gap-3 mt-4 justify-center">
               {images.map((img, index) => (
@@ -173,8 +194,10 @@ export default function ProductDetails({ id }) {
             </div>
           )}
         </div>
- {/* Details */}
- <div className="flex-1 flex flex-col justify-center gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg">
+
+        {/* DETAILS */}
+        <div className="flex-1 flex flex-col justify-center gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg">
+
           {/* Title */}
           <h1 className="text-4xl font-bold text-amber-800 mb-2">
             {getText(scarf.title, scarf.titleAr)}
@@ -182,15 +205,7 @@ export default function ProductDetails({ id }) {
 
           {/* Category */}
           {scarf.category && (
-            <span
-              className="
-                inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-semibold
-                bg-linear-to-r from-amber-400 via-amber-300 to-amber-500
-                text-white shadow-lg border border-amber-300
-                uppercase tracking-wide
-                transition-transform duration-300 hover:scale-105
-              "
-            >
+            <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-semibold bg-linear-to-r from-amber-400 via-amber-300 to-amber-500 text-white shadow-lg border border-amber-300 uppercase tracking-wide transition-transform duration-300 hover:scale-105">
               {getText(scarf.category, scarf.categoryAr)}
             </span>
           )}
@@ -199,8 +214,9 @@ export default function ProductDetails({ id }) {
           <p className="text-gray-700 leading-relaxed mb-4">
             {getText(scarf.description, scarf.descriptionAr)}
           </p>
-                    {/* Colors */}
-                    {scarf.colors?.length > 0 && (
+
+          {/* Colors */}
+          {scarf.colors?.length > 0 && (
             <div>
               <p className="mb-2 text-sm text-gray-600">
                 {lang === "en" ? "Choose color:" : "اختر اللون:"}
@@ -227,7 +243,7 @@ export default function ProductDetails({ id }) {
             </div>
           )}
 
-          {/* Product Disclaimer */}
+          {/* Disclaimer */}
           <div className="mt-4 p-4 rounded-2xl bg-linear-to-r from-amber-50 to-amber-100 shadow-md border border-amber-200">
             <div className="flex items-start gap-3">
               <span className="text-amber-700 font-bold text-lg">⚠️</span>
@@ -241,11 +257,6 @@ export default function ProductDetails({ id }) {
                   {lang === "en"
                     ? "Minor variations in texture or shade are normal and do not affect the quality or authenticity of the product."
                     : "الاختلافات الطفيفة في الملمس أو اللون طبيعية ولا تؤثر على جودة أو أصالة المنتج."}
-                </p>
-                <p className="font-semibold">
-                  {lang === "en"
-                    ? "All items are original La Voile products, carefully selected to meet high quality standards."
-                    : "جميع المنتجات أصلية من La Voile، تم اختيارها بعناية لتلبية معايير الجودة العالية."}
                 </p>
               </div>
             </div>
@@ -276,7 +287,7 @@ export default function ProductDetails({ id }) {
             )}
           </div>
 
-          {/* Cart Actions */}
+          {/* CART BUTTONS */}
           {!itemInCart ? (
             <button
               onClick={handleAddToCart}
@@ -332,7 +343,6 @@ export default function ProductDetails({ id }) {
         </div>
       </div>
 
-      {/* Fullscreen image viewer */}
       {isImageOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"

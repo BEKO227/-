@@ -6,18 +6,12 @@ import { motion } from "framer-motion";
 
 const categories = [
   { key: "all", en: "All", ar: "الكل" },
-  { key: "kuwaiti_design1", en: "Kuwaiti Design 1", ar: "كويتي رسمة 1" },
-  { key: "kuwaiti-design2", en: "Kuwaiti Design 2", ar: "كويتي رسمة 2" },
-  { key: "thiland", en: "Thailand", ar: "تايلاندي" },
-  { key: "chiffon", en: "Chiffon", ar: "شيفون" },
-  { key: "printed-modal", en: "Printed Modal", ar: "مودال مطبوع" },
-  { key: "modal", en: "Modal", ar: "مودال" },
-  { key: "packet", en: "Packet", ar: "بنادانا باكت" },
-  { key: "bandana", en: "Bandana", ar: "بنادانا" },
-  { key: "dirty-linen", en: "Dirty Linen", ar: "كتان متسخ" },
-  { key: "plain", en: "Plain", ar: "سادة" },
   { key: "cotton", en: "Cotton", ar: "قطن" },
-  { key: "lycra-cotton", en: "Lycra Cotton", ar: "قطن ليكرا" },
+  { key: "bandana", en: "Bandana", ar: "بنادانا" },
+  { key: "chiffon", en: "Chiffon", ar: "شيفون" },
+  { key: "silk", en: "Silk", ar: "حرير" },
+  { key: "kuwaiti", en: "Kuwaiti", ar: "كويتي" },
+  { key: "thiland", en: "Thailand", ar: "تايلاندي" },
 ];
 
 export default function HomeCategories() {
