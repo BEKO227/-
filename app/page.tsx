@@ -71,7 +71,7 @@ export default function Home() {
         </span>
 
         <a
-          href="https://instagram.com"
+          href="https://www.instagram.com/qamar_scarves/"
           target="_blank"
           className="
             px-8 py-2 rounded-full border border-[#D4AF37]
@@ -81,6 +81,18 @@ export default function Home() {
           "
         >
           Instagram
+        </a>
+        <a
+          href="https://www.tiktok.com/@qamar.scarves"
+          target="_blank"
+          className="
+            px-8 py-2 rounded-full border border-[#D4AF37]
+            text-[#A3742A] font-semibold
+            hover:bg-[#D4AF37]/15 transition
+            tracking-wide
+          "
+        >
+          Tiktok
         </a>
       </motion.div>
 
