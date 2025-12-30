@@ -1,47 +1,82 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/app/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ProductCard from "../../../components/ProductCard";
-import { useRouter } from "next/navigation";
 
 export default function CategoryPage() {
   const { lang } = useLanguage();
-  const { category } = useParams(); // category from URL
-  const [scarves, setScarves] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { category } = useParams();
   const router = useRouter();
 
-  // Category lookup object
+  const [scarves, setScarves] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSub, setSelectedSub] = useState("all");
+
+  // TWO-STEP CATEGORY MAP
   const categoriesMap = {
-    all: { en: "All", ar: "الكل" },
-    cotton: { en: "Cotton", ar: "قطن" },
-    bandana: { en: "Bandana", ar: "بنادانا" },
-    chiffon: { en: "Chiffon", ar: "شيفون" },
-    silk: { en: "Silk", ar: "حرير" },
-    kuwaiti: { en: "Kuwaiti", ar: "كويتي" },
-    thiland: { en: "Thailand", ar: "تايلاندي" },
+    all: { en: "All", ar: "الكل", sub: [] },
+
+    cotton: {
+      en: "Cotton",
+      ar: "قطن",
+      sub: [
+        { key: "modal", en: "Modal", ar: "مودال" },
+        { key: "printed_modal", en: "Printed Modal", ar: "مودال مطبوع" },
+        { key: "jel", en: "Jel", ar: "چيل" },
+        { key: "packet", en: "Packet", ar: "باكيت" },
+      ],
+    },
+
+    bandana: { en: "Bandana", ar: "بنادانا", sub: [] },
+
+    chiffon: { en: "Chiffon", ar: "شيفون", sub: [] },
+
+    silk: { en: "Silk", ar: "حرير", sub: [] },
+
+    kuwaiti: {
+      en: "Kuwaiti",
+      ar: "كويتي",
+      sub: [
+        { key: "woven", en: "Woven", ar: "منسوج" },
+        { key: "breezy", en: "Breezy", ar: "خفيف" },
+      ],
+    },
+
+    thiland: { en: "Thailand", ar: "تايلاندي", sub: [] },
   };
 
   useEffect(() => {
     async function fetchScarves() {
+      setLoading(true);
+
       const snapshot = await getDocs(collection(db, "scarves"));
       const result = [];
 
       snapshot.forEach((doc) => {
         const data = doc.data();
-        // If category === 'all', include all scarves
-        if (
-          category.toLowerCase() === "all" ||
-          (data.category || "").trim().toLowerCase() === category.toLowerCase()
-        ) {
+
+        const cat = (data.category || "").toLowerCase().trim();
+        const sub = (data.subCategory || "").toLowerCase().trim();
+        const urlCat = category.toLowerCase();
+
+        // 1️⃣ Show all
+        if (urlCat === "all") {
           result.push({ id: doc.id, ...data });
+          return;
         }
+
+        // 2️⃣ Filter by main category
+        if (cat !== urlCat) return;
+
+        // 3️⃣ If sub selected → filter also by sub
+        if (selectedSub !== "all" && sub !== selectedSub) return;
+
+        result.push({ id: doc.id, ...data });
       });
 
       setScarves(result);
@@ -49,7 +84,7 @@ export default function CategoryPage() {
     }
 
     fetchScarves();
-  }, [category]);
+  }, [category, selectedSub]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -60,6 +95,8 @@ export default function CategoryPage() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
+
+  const currentCat = categoriesMap[category];
 
   return (
     <>
@@ -75,18 +112,43 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Page Content */}
       <section className="py-16 px-6 bg-[#fdfaf7] min-h-screen">
-        <h1
-          className={`text-4xl mb-10 text-center text-amber-900 font-bold ${
-            lang === "ar" ? "draw-ar" : "draw-en"
-          }`}
-        >
-          {lang === "ar"
-            ? categoriesMap[category]?.ar
-            : categoriesMap[category]?.en}
+        {/* Title */}
+        <h1 className="text-4xl mb-8 text-center text-amber-900 font-bold">
+          {lang === "ar" ? currentCat?.ar : currentCat?.en}
         </h1>
 
+        {/* SUB CATEGORY FILTER */}
+        {currentCat?.sub?.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
+            <button
+              onClick={() => setSelectedSub("all")}
+              className={`px-4 py-2 border rounded-full ${
+                selectedSub === "all"
+                  ? "bg-amber-800 text-white"
+                  : "text-amber-900"
+              }`}
+            >
+              {lang === "ar" ? "الكل" : "All"}
+            </button>
+
+            {currentCat.sub.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setSelectedSub(s.key)}
+                className={`px-4 py-2 border rounded-full ${
+                  selectedSub === s.key
+                    ? "bg-amber-800 text-white"
+                    : "text-amber-900"
+                }`}
+              >
+                {lang === "ar" ? s.ar : s.en}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* CONTENT */}
         {loading ? (
           <p className="text-center text-amber-800 text-xl">
             {lang === "ar" ? "جاري التحميل..." : "Loading..."}
@@ -94,8 +156,8 @@ export default function CategoryPage() {
         ) : scarves.length === 0 ? (
           <p className="text-center text-amber-800 text-xl">
             {lang === "ar"
-              ? "لا توجد أوشحة في هذه الفئة"
-              : "No scarves in this category"}
+              ? "لا توجد منتجات في هذا القسم"
+              : "No products in this category"}
           </p>
         ) : (
           <motion.div
