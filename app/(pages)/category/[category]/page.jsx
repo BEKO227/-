@@ -27,7 +27,7 @@ export default function CategoryPage() {
       sub: [
         { key: "modal", en: "Modal", ar: "مودال" },
         { key: "printed_modal", en: "Printed Modal", ar: "مودال مطبوع" },
-        { key: "jel", en: "Jel", ar: "چيل" },
+        { key: "jel", en: "Gel", ar: "چيل" },
         { key: "packet", en: "Packet", ar: "باكيت" },
       ],
     },
