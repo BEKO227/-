@@ -17,11 +17,16 @@ export default function ProductCard({ product, small = false }) {
   const { lang } = useLanguage();
 
   const [disabled, setDisabled] = useState(false);
+  const [showColors, setShowColors] = useState(false); // 🔹 toggle color stocks
 
   const itemInCart = cart.find((i) => i.id === product.id);
   const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
-  useEffect(() => setDisabled(product.stock <= 0), [product.stock]);
+  const totalStock = product.colors?.length
+    ? product.colors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0)
+    : product.stock;
+
+  useEffect(() => setDisabled(totalStock <= 0), [totalStock]);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -41,7 +46,6 @@ export default function ProductCard({ product, small = false }) {
     Array.isArray(product.images) && product.images.length > 0
       ? product.images.filter(Boolean)
       : ["/placeholder.webp"];
-
   const coverImage = images[0];
 
   const badges = [];
@@ -59,149 +63,137 @@ export default function ProductCard({ product, small = false }) {
   };
 
   return (
-<Card
-  onClick={goToDetails}
-  className="
-    group relative overflow-hidden rounded-2xl
-    bg-white/90 backdrop-blur
-    shadow-[0_12px_32px_rgba(0,0,0,0.06)]
-    hover:shadow-[0_20px_45px_rgba(0,0,0,0.10)]
-    transition-all duration-300
-    cursor-pointer
-    max-w-60  /* ⭐ smaller width */
-"
->
-  <CardHeader className="p-0 relative">
-    <div className="relative w-full h-44 overflow-hidden rounded-t-2xl">
-      <div className="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/40 z-2" />
+    <Card
+      onClick={goToDetails}
+      className={`group relative overflow-hidden rounded-2xl bg-white/90 backdrop-blur shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer max-w-60`}
+    >
+      <CardHeader className="p-0 relative">
+        <div className="relative w-full h-44 overflow-hidden rounded-t-2xl">
+          <div className="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/40 z-2" />
+          <Image
+            src={coverImage}
+            alt={product.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 240px"
+          />
+        </div>
+        <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-3">
+          {badges.map((badge) => (
+            <span
+              key={badge}
+              className={`px-2 py-0.5 text-[10px] font-bold text-white rounded-full shadow-sm bg-linear-to-r ${badgeColors[badge]}`}
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
+      </CardHeader>
 
-      <Image
-        src={coverImage}
-        alt={product.title}
-        fill
-        className="
-          object-cover
-          transition-transform duration-500
-          group-hover:scale-105
-        "
-        sizes="(max-width: 768px) 100vw, 240px"
-      />
-    </div>
+      <CardContent className="p-3 flex flex-col justify-between h-full">
+        <div>
+          <CardTitle className="text-sm font-semibold text-amber-900 leading-snug line-clamp-2">
+            {lang === "en" ? product.title : product.title_ar || product.title}
+          </CardTitle>
 
-    <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-3">
-      {badges.map((badge) => (
-        <span
-          key={badge}
-          className={`
-            px-2 py-0.5 text-[10px] font-bold text-white
-            rounded-full shadow-sm
-            bg-linear-to-r ${badgeColors[badge]}
-          `}
-        >
-          {badge}
-        </span>
-      ))}
-    </div>
-  </CardHeader>
+          {product.brand && (
+            <p className="text-[11px] mt-1 text-gray-500 line-clamp-1">
+              {getText(product.brand, product.brand_ar)}
+            </p>
+          )}
 
-  <CardContent className="p-3 flex flex-col justify-between h-full">
-  <div>
-    <CardTitle className="text-sm font-semibold text-amber-900 leading-snug line-clamp-2">
-      {lang === "en"
-        ? product.title
-        : product.title_ar || product.title}
-    </CardTitle>
+          <p className="text-lg font-bold text-amber-700 mt-1">
+            {product.price} <span className="text-[11px] text-gray-500">EGP</span>
+          </p>
 
-    {product.brand && (
-      <p className="text-[11px] mt-1 text-gray-500 line-clamp-1">
-        {getText(product.brand, product.brand_ar)}
-      </p>
-    )}
+          <p className="mt-1">
+            {totalStock > 0 ? (
+              <span
+                className="text-green-600 text-[12px] font-semibold cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowColors(!showColors);
+                }}
+              >
+                {lang === "en" ? "In Stock" : "متوفر"} 
+              </span>
+            ) : (
+              <span className="text-red-600 text-[12px] font-semibold">
+                {lang === "en" ? "Out of Stock" : "غير متوفر"}
+              </span>
+            )}
+          </p>
 
-    {product.category && (
-      <span className="inline-block mt-2 mb-1 px-3 py-[3px] rounded-full text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-        {getText(product.category, product.categoryAr)}
-      </span>
-    )}
+          {showColors && product.colors?.length > 0 && (
+            <div className="mt-2 bg-gray-50 p-2 rounded-md border border-gray-200">
+              {product.colors.map((c, i) => (
+                <div key={i} className="flex items-center gap-2 text-[12px] mb-1">
+                  <div
+                    className="w-4 h-4 rounded-full border"
+                    style={{ backgroundColor: c.hex }}
+                  ></div>
+                  <span>{c.name}</span>
+                  <span className="ml-auto">
+                    {c.stock} {lang === "en" ? "pcs" : "قطعة"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-    <p className="text-lg font-bold text-amber-700 mt-1">
-      {product.price} <span className="text-[11px] text-gray-500">EGP</span>
-    </p>
-
-    <p className="mt-1">
-      {product.stock > 0 ? (
-        <span className="text-green-600 text-[12px] font-semibold">
-          {lang === "en" ? "In Stock" : "متوفر"}
-        </span>
-      ) : (
-        <span className="text-red-600 text-[12px] font-semibold">
-          {lang === "en" ? "Out of Stock" : "غير متوفر"}
-        </span>
-      )}
-    </p>
-  </div>
-
-      {!itemInCart ? (
-        <button
-          onClick={handleAddToCart}
-          disabled={disabled}
-          className={`
-            mt-3 w-full py-2 rounded-full text-[13px] font-semibold text-white
-            transition-all duration-300
-            ${
+        {!itemInCart ? (
+          <button
+            onClick={handleAddToCart}
+            disabled={disabled}
+            className={`mt-3 w-full py-2 rounded-full text-[13px] font-semibold text-white transition-all duration-300 ${
               disabled
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-linear-to-r from-amber-700 to-amber-900 hover:opacity-90 shadow"
-            }
-          `}
-        >
-          {disabled
-            ? lang === "en"
-              ? "Out of Stock"
-              : "غير متوفر"
-            : lang === "en"
-            ? "Add to Cart"
-            : "أضف إلى السلة"}
-        </button>
-      ) : (
-        <div
-          className="mt-3 flex items-center justify-between"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {itemInCart.quantity === 1 ? (
-            <button
-              onClick={() => removeFromCart(product.id)}
-              className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition"
-            >
-              <Trash size={14} />
-            </button>
-          ) : (
+            }`}
+          >
+            {disabled
+              ? lang === "en"
+                ? "Out of Stock"
+                : "غير متوفر"
+              : lang === "en"
+              ? "Add to Cart"
+              : "أضف إلى السلة"}
+          </button>
+        ) : (
+          <div
+            className="mt-3 flex items-center justify-between"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {itemInCart.quantity === 1 ? (
+              <button
+                onClick={() => removeFromCart(product.id)}
+                className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition"
+              >
+                <Trash size={14} />
+              </button>
+            ) : (
+              <button
+                onClick={() =>
+                  updateQuantity(product.id, itemInCart.quantity - 1)
+                }
+                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-bold"
+              >
+                -
+              </button>
+            )}
+            <span className="px-3 text-sm font-semibold">{itemInCart.quantity}</span>
             <button
               onClick={() =>
-                updateQuantity(product.id, itemInCart.quantity - 1)
+                updateQuantity(product.id, itemInCart.quantity + 1)
               }
               className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-bold"
             >
-              -
+              +
             </button>
-          )}
-
-          <span className="px-3 text-sm font-semibold">
-            {itemInCart.quantity}
-          </span>
-
-          <button
-            onClick={() =>
-              updateQuantity(product.id, itemInCart.quantity + 1)
-            }
-            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-bold"
-          >
-            +
-          </button>
-        </div>
-      )}
-    </CardContent>
-</Card>
-
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

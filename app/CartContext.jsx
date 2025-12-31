@@ -50,11 +50,19 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ⭐ ADD TO CART (supports color)
+  // --------------------------------------------------
+  // ⭐ ADD TO CART (COLOR-AWARE)
+  // --------------------------------------------------
   const addToCart = async (product) => {
-    if (!product || product.stock <= 0) return;
+    if (!product) return;
 
-    const uniqueId = product.uniqueId; // productId-colorName or productId
+    const uniqueId = product.uniqueId;
+
+    // must select color if colors exist
+    if (product.colors?.length > 0 && !product.selectedColor) {
+      toast.error("Please select a color first");
+      return;
+    }
 
     const existingIndex = cart.findIndex(
       (item) => item.uniqueId === uniqueId
@@ -62,69 +70,170 @@ export const CartProvider = ({ children }) => {
 
     let newCart;
 
-    if (existingIndex !== -1) {
-      const item = cart[existingIndex];
+    const colors = [...(product.colors || [])];
 
-      if (item.quantity >= product.stock) {
-        toast.error("Out of stock!");
+    // find color index
+    let colorIndex = -1;
+
+    if (product.selectedColor) {
+      colorIndex = colors.findIndex(
+        (c) => c.name === product.selectedColor.name
+      );
+    }
+
+    // product WITH colors
+    if (colorIndex !== -1) {
+      const colorStock = Number(colors[colorIndex].stock || 0);
+
+      if (colorStock <= 0) {
+        toast.error("This color is out of stock");
         return;
       }
 
-      newCart = [...cart];
-      newCart[existingIndex].quantity += 1;
-    } else {
-      newCart = [...cart, { ...product, quantity: 1 }];
+      if (existingIndex !== -1) {
+        const cartItem = cart[existingIndex];
+
+        if (cartItem.quantity >= colorStock) {
+          toast.error("No more pieces available for this color");
+          return;
+        }
+
+        newCart = [...cart];
+        newCart[existingIndex].quantity += 1;
+      } else {
+        newCart = [...cart, { ...product, quantity: 1 }];
+      }
+
+      // decrease this color stock
+      colors[colorIndex].stock = colorStock - 1;
+    }
+
+    // product WITHOUT colors
+    else {
+      if (product.stock <= 0) {
+        toast.error("Out of stock");
+        return;
+      }
+
+      if (existingIndex !== -1) {
+        newCart = [...cart];
+        newCart[existingIndex].quantity += 1;
+      } else {
+        newCart = [...cart, { ...product, quantity: 1 }];
+      }
     }
 
     setCart(newCart);
     updateFirestore(newCart);
 
+    // Recalculate total
+    const totalStock = colors.length
+      ? colors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0)
+      : (product.stock || 0) - 1;
+
     const productRef = doc(db, "scarves", product.id.toString());
+
     try {
       await updateDoc(productRef, {
-        stock: product.stock - 1,
+        colors,
+        stock: totalStock,
       });
     } catch (err) {
       console.error("Error updating stock:", err);
     }
   };
 
-  // ⭐ REMOVE ITEM (by uniqueId)
+  // --------------------------------------------------
+  // ⭐ REMOVE FROM CART (RESTORE STOCK)
+  // --------------------------------------------------
   const removeFromCart = async (uniqueId) => {
-    const item = cart.find((i) => i.uniqueId === uniqueId);
-    if (!item) return;
-
-    const newCart = cart.filter((i) => i.uniqueId !== uniqueId);
-
-    setCart(newCart);
-    updateFirestore(newCart);
-
-    const productRef = doc(db, "scarves", item.id.toString());
-    try {
-      await updateDoc(productRef, {
-        stock: item.stock + item.quantity,
-      });
-    } catch (err) {
-      console.error("Error restoring stock:", err);
-    }
-  };
-
-  // ⭐ UPDATE QUANTITY (by uniqueId)
-  const updateQuantity = async (uniqueId, newQuantity) => {
     const item = cart.find((i) => i.uniqueId === uniqueId);
     if (!item) return;
 
     const productRef = doc(db, "scarves", item.id.toString());
     const productSnap = await getDoc(productRef);
-
     if (!productSnap.exists()) return;
 
-    const realStock = productSnap.data().stock;
-    const change = newQuantity - item.quantity;
+    const productData = productSnap.data();
+    let colors = [...(productData.colors || [])];
 
-    if (change > 0 && realStock < change) {
-      toast.error("Not enough stock available!");
-      return;
+    // restore per-color
+    if (item.selectedColor) {
+      const index = colors.findIndex(
+        (c) => c.name === item.selectedColor.name
+      );
+      if (index !== -1) {
+        colors[index].stock =
+          Number(colors[index].stock || 0) + item.quantity;
+      }
+    }
+
+    const totalStock = colors.length
+      ? colors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0)
+      : (productData.stock || 0) + item.quantity;
+
+    try {
+      await updateDoc(productRef, {
+        colors,
+        stock: totalStock,
+      });
+    } catch (err) {
+      console.error("Error restoring stock:", err);
+    }
+
+    const newCart = cart.filter((i) => i.uniqueId !== uniqueId);
+    setCart(newCart);
+    updateFirestore(newCart);
+  };
+
+  // --------------------------------------------------
+  // ⭐ UPDATE QUANTITY
+  // --------------------------------------------------
+  const updateQuantity = async (uniqueId, newQuantity) => {
+    const item = cart.find((i) => i.uniqueId === uniqueId);
+    if (!item) return;
+
+    if (newQuantity < 1) return removeFromCart(uniqueId);
+
+    const productRef = doc(db, "scarves", item.id.toString());
+    const snap = await getDoc(productRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    let colors = [...(data.colors || [])];
+
+    let colorIndex = -1;
+    if (item.selectedColor) {
+      colorIndex = colors.findIndex(
+        (c) => c.name === item.selectedColor.name
+      );
+    }
+
+    let change = newQuantity - item.quantity;
+
+    // with color stock
+    if (colorIndex !== -1) {
+      const colorStock = Number(colors[colorIndex].stock || 0);
+
+      if (change > 0 && colorStock < change) {
+        toast.error("Not enough stock for this color");
+        return;
+      }
+
+      colors[colorIndex].stock = colorStock - change;
+    }
+
+    const totalStock = colors.length
+      ? colors.reduce((sum, c) => sum + (Number(c.stock) || 0), 0)
+      : (data.stock || 0) - change;
+
+    try {
+      await updateDoc(productRef, {
+        colors,
+        stock: totalStock,
+      });
+    } catch (err) {
+      console.error("Error updating stock:", err);
     }
 
     const updatedCart = cart.map((i) =>
@@ -133,29 +242,12 @@ export const CartProvider = ({ children }) => {
 
     setCart(updatedCart);
     updateFirestore(updatedCart);
-
-    try {
-      await updateDoc(productRef, {
-        stock: realStock - change,
-      });
-    } catch (err) {
-      console.error("Error updating stock:", err);
-    }
   };
 
   const clearCart = async () => {
     for (const item of cart) {
-      const productRef = doc(db, "scarves", item.id.toString());
-
-      try {
-        await updateDoc(productRef, {
-          stock: item.stock + item.quantity,
-        });
-      } catch (err) {
-        console.error("Error restoring stock:", err);
-      }
+      await removeFromCart(item.uniqueId);
     }
-
     setCart([]);
     updateFirestore([]);
   };

@@ -26,7 +26,11 @@ export default function ProductDetails({ id }) {
 
   const getText = (en, ar) => (lang === "ar" ? ar || en : en);
 
-  // 👉 build a color-aware ID
+  const getTotalStock = () => {
+    if (!scarf?.colors || scarf.colors.length === 0) return scarf?.stock || 0;
+    return scarf.colors.reduce((sum, color) => sum + (color.stock || 0), 0);
+  };
+
   const currentUniqueId = scarf
     ? scarf.colors?.length > 0 && selectedColor
       ? `${scarf.id}-${selectedColor.name}`
@@ -37,7 +41,6 @@ export default function ProductDetails({ id }) {
     ? cart.find((i) => String(i.uniqueId) === String(currentUniqueId))
     : undefined;
 
-  // Fetch product
   const fetchScarf = async () => {
     try {
       setLoading(true);
@@ -47,7 +50,6 @@ export default function ProductDetails({ id }) {
       if (docSnap.exists()) {
         const data = { id: docSnap.id, ...docSnap.data() };
         setScarf(data);
-
         if (data.colors?.length > 0) {
           setSelectedColor(data.colors[0]);
           setActiveImage(0);
@@ -89,7 +91,7 @@ export default function ProductDetails({ id }) {
     ? [scarf.imageCover]
     : [];
 
-  const disabled = scarf.stock <= 0;
+  const disabled = getTotalStock() <= 0;
 
   const mainImage =
     selectedColor?.image || images[activeImage] || images[0];
@@ -101,7 +103,6 @@ export default function ProductDetails({ id }) {
     router.push("/auth/signin");
   };
 
-  // ⭐ ADD TO CART (color required)
   const handleAddToCart = () => {
     if (!user) return requireLogin();
 
@@ -114,15 +115,14 @@ export default function ProductDetails({ id }) {
 
     addToCart({
       ...scarf,
-
       selectedColor: selectedColor
         ? {
             name: selectedColor.name,
             hex: selectedColor.hex,
             image: selectedColor.image || null,
+            stock: selectedColor.stock || 0,
           }
         : null,
-
       uniqueId: currentUniqueId,
     });
   };
@@ -197,20 +197,16 @@ export default function ProductDetails({ id }) {
 
         {/* DETAILS */}
         <div className="flex-1 flex flex-col justify-center gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg">
-
-          {/* Title */}
           <h1 className="text-4xl font-bold text-amber-800 mb-2">
             {getText(scarf.title, scarf.titleAr)}
           </h1>
 
-          {/* Category */}
           {scarf.category && (
-            <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-semibold bg-linear-to-r from-amber-400 via-amber-300 to-amber-500 text-white shadow-lg border border-amber-300 uppercase tracking-wide transition-transform duration-300 hover:scale-105">
+            <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-semibold bg-linear-to-r from-amber-400 via-amber-300 to-amber-500 text-white shadow-lg border border-amber-300 uppercase tracking-wide">
               {getText(scarf.category, scarf.categoryAr)}
             </span>
           )}
 
-          {/* Description */}
           <p className="text-gray-700 leading-relaxed mb-4">
             {getText(scarf.description, scarf.descriptionAr)}
           </p>
@@ -222,29 +218,36 @@ export default function ProductDetails({ id }) {
                 {lang === "en" ? "Choose color:" : "اختر اللون:"}
               </p>
 
-              <div className="flex gap-3 mt-2 mb-4">
+              <div className="flex gap-3 mt-2 mb-2">
                 {scarf.colors.map((color, index) => (
                   <button
                     key={index}
                     onClick={() => {
+                      if (color.stock <= 0) return;
                       setSelectedColor(color);
                       setActiveImage(index);
                     }}
+                    disabled={color.stock <= 0}
                     className={`w-8 h-8 rounded-full border-2 transition ${
                       selectedColor?.name === color.name
                         ? "border-amber-700 shadow-md"
                         : "border-gray-300"
-                    }`}
+                    } ${color.stock <= 0 ? "opacity-40 cursor-not-allowed" : ""}`}
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                   />
                 ))}
               </div>
+
+              {selectedColor && (
+                <p className="text-sm mt-1 text-gray-600">
+                  Stock: <span className="font-semibold">{selectedColor.stock || 0}</span>
+                </p>
+              )}
             </div>
           )}
 
-          {/* Disclaimer */}
-          <div className="mt-4 p-4 rounded-2xl bg-linear-to-r from-amber-50 to-amber-100 shadow-md border border-amber-200">
+<div className="mt-4 p-4 rounded-2xl bg-linear-to-r from-amber-50 to-amber-100 shadow-md border border-amber-200">
             <div className="flex items-start gap-3">
               <span className="text-amber-700 font-bold text-lg">⚠️</span>
               <div className="text-gray-700 text-sm space-y-2 leading-relaxed">
@@ -267,16 +270,9 @@ export default function ProductDetails({ id }) {
             {scarf.price} EGP
           </p>
 
-          {/* Rating */}
-          <p className="text-lg text-gray-700">
-            ⭐ {(scarf.ratingsAverage || 0).toFixed(1)} (
-            {scarf.ratingsQuantity || 0}{" "}
-            {lang === "en" ? "reviews" : "تقييم"})
-          </p>
-
           {/* Stock */}
           <div className="mb-4">
-            {scarf.stock > 0 ? (
+            {getTotalStock() > 0 ? (
               <span className="text-green-600 font-bold px-3 py-1 rounded-full bg-green-50 border border-green-200">
                 {lang === "en" ? "In Stock" : "متوفر"}
               </span>
@@ -287,7 +283,7 @@ export default function ProductDetails({ id }) {
             )}
           </div>
 
-          {/* CART BUTTONS */}
+          {/* CART */}
           {!itemInCart ? (
             <button
               onClick={handleAddToCart}
