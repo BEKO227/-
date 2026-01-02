@@ -238,12 +238,6 @@ export default function ProductDetails({ id }) {
                   />
                 ))}
               </div>
-
-              {selectedColor && (
-                <p className="text-sm mt-1 text-gray-600">
-                  Stock: <span className="font-semibold">{selectedColor.stock || 0}</span>
-                </p>
-              )}
             </div>
           )}
 
