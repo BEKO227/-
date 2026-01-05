@@ -18,8 +18,8 @@ export default function Footer() {
             {/* Contact */}
             <div>
               <h2 className="font-semibold text-lg mb-3">Contact</h2>
-              <p className="text-sm mb-1">+20 102 715 7089</p>
-              <p className="text-sm">+20 100 104 1499</p>
+              {/* <p className="text-sm mb-1">+20 102 715 7089</p>
+              <p className="text-sm">+20 100 104 1499</p> */}
 
               <div className="flex gap-4 mt-2">
                 <a

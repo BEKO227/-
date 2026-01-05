@@ -386,9 +386,8 @@ export default function CheckoutPage() {
         {paymentMethod === "InstaPay" && (
           <div className="mt-4 p-4 bg-yellow-50 border rounded-xl space-y-3 relative">
             <p className="font-medium">
-              {t("Please pay to:", "يرجى الدفع إلى:")} <br />
-              Phone: +20 102 715 7089 <br />
-              Bank Account: 123-456-789-1011
+              {t("Please pay to and send the confirmation on whatsapp:", " يرجى الدفع إلى و ارسال التأكيد على الواتساب:")} <br />
+              Phone: +20 1027306090 <br />
             </p>
             <input
               type="text"
