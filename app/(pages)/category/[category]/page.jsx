@@ -48,6 +48,8 @@ export default function CategoryPage() {
     },
 
     thiland: { en: "Thailand", ar: "تايلاندي", sub: [] },
+    shawls: { en: "Shawls", ar: "شيلان", sub: [] },
+
   };
 
   useEffect(() => {

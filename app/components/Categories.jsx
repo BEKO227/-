@@ -12,6 +12,7 @@ const categories = [
   { key: "silk", en: "Silk", ar: "حرير" },
   { key: "kuwaiti", en: "Kuwaiti", ar: "كويتي" },
   { key: "thiland", en: "Thailand", ar: "تايلاندي" },
+  { key: "shawls", en: "Shawls", ar: "شيلان" },
 ];
 
 export default function HomeCategories() {
