@@ -1,4 +1,5 @@
 "use client";
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
@@ -8,12 +9,12 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ IMPORTANT
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         try {
-          // Fetch user info from Firestore
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
 
@@ -32,20 +33,24 @@ export const AuthProvider = ({ children }) => {
               productsBoughtCount: userData.productsBoughtCount,
             });
           } else {
-            // fallback if Firestore doc doesn't exist
             setUser({
               uid: currentUser.uid,
               email: currentUser.email,
-              firstName: currentUser.displayName || currentUser.email.split("@")[0],
+              firstName:
+                currentUser.displayName ||
+                currentUser.email.split("@")[0],
               lastName: "",
             });
           }
         } catch (err) {
           console.error("Error fetching user data:", err);
+          setUser(null);
         }
       } else {
         setUser(null);
       }
+
+      setLoading(false); // ✅ auth check finished
     });
 
     return () => unsubscribe();
@@ -54,14 +59,13 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      console.log("Logged out successfully");
     } catch (error) {
-      console.log("Logout error:", error);
+      console.error("Logout error:", error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
